@@ -1,0 +1,76 @@
+/* Mode choice (ported from the prototype's "Mode choice" and "v3: the switch" styles). */
+
+/* Back link at the top, the rest centred vertically in the free space */
+.mode {
+  flex: 1; overflow-y: auto;
+  display: flex; flex-direction: column;
+  padding: var(--space-4) max(var(--space-4), calc(50% - 260px));
+}
+.mode > .fn-link { align-self: flex-start; }
+.mode__body { flex: 1; display: flex; flex-direction: column; justify-content: center; padding-top: var(--space-5); min-height: 0; }
+.mode__title { font: var(--type-screen-title); color: var(--moonlight); }
+.mode__badge { margin-top: 10px; }
+
+.mode-tile { display: flex; flex-direction: column; margin-top: var(--space-4); padding: clamp(16px, 2.4cqw, 28px); }
+/* The art is square, as large as fits (--art is set by fitArt in js/screens/mode.js) */
+.mode-img { height: var(--art, 0px); margin-bottom: clamp(12px, 1.8cqw, 20px); display: flex; justify-content: center; }
+.mode-img.none { display: none; }
+.mode-art {
+  width: var(--art, 0px); height: var(--art, 0px);
+  border-radius: var(--radius-tile);
+  display: flex; align-items: center; justify-content: center;
+  transition: background-color var(--dur-switch);
+}
+.mode-art img { display: block; width: 100%; height: 100%; }
+.img-area--neutral { background: var(--image-neutral); }
+.img-area--moderate { background: var(--clementine-tint); }
+.img-area--recovery { background: var(--lavender-tint); }
+
+/* Segmented control: one bordered track, two labels; the picked side fills with its mode colour. */
+.switch {
+  position: relative;
+  display: grid; grid-template-columns: 1fr 1fr;
+  background: var(--sky);
+  border: 1.5px solid var(--window-missed-frame);
+  border-radius: var(--radius-pill);
+  padding: 4px;
+}
+.switch button {
+  position: relative; z-index: 1;
+  font: inherit; font-size: 15px; line-height: 18px; font-weight: 700;
+  background: transparent; border: 0; color: var(--ink);
+  padding: 12px 10px; min-height: 52px;
+  border-radius: var(--radius-pill);
+  display: flex; gap: 6px; align-items: center; justify-content: center; text-align: center;
+  cursor: pointer;
+  transition: color var(--dur-switch), background-color 150ms;
+}
+.switch button .fn-icon { width: 18px; height: 18px; }
+.switch [data-mode="moderate"] .fn-icon { color: var(--clementine); }
+.switch [data-mode="recovery"] .fn-icon { color: var(--lavender); }
+.switch button:hover { background: var(--surface); }
+.switch button:focus-visible { outline-offset: 2px; }
+.switch .thumb {
+  position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px);
+  border-radius: var(--radius-pill);
+  opacity: 0;
+  transition: transform var(--dur-switch) ease, background var(--dur-switch), opacity var(--dur-quick);
+}
+.switch[data-pick="moderate"] .thumb { opacity: 1; background: var(--clementine); }
+.switch[data-pick="recovery"] .thumb { opacity: 1; background: var(--lavender); transform: translateX(100%); }
+.switch[data-pick="moderate"] [data-mode="moderate"],
+.switch[data-pick="moderate"] [data-mode="moderate"] .fn-icon { color: var(--on-clementine); background: transparent; }
+.switch[data-pick="recovery"] [data-mode="recovery"],
+.switch[data-pick="recovery"] [data-mode="recovery"] .fn-icon { color: var(--on-lavender); background: transparent; }
+
+.pick-info { min-height: 48px; margin: 14px 0 12px; }
+.pick-routine { display: flex; align-items: center; gap: 6px; font-size: 16px; line-height: 22px; }
+.pick-routine .fn-icon { width: 16px; height: 16px; }
+.pick-routine--moderate { color: var(--clementine); }
+.pick-routine--recovery { color: var(--lavender); }
+.is-hidden { visibility: hidden; }
+
+/* Small phones (≤ 380 × 700, e.g. 360 × 640, iPhone SE): no illustration */
+@container (max-width: 380px) and (max-height: 700px) {
+  .mode-img { display: none; }
+}

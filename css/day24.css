@@ -18,7 +18,6 @@
 .d24__body { flex: 1; display: flex; flex-direction: column; justify-content: center; padding-top: var(--space-5); }
 .d24__title { font: var(--type-screen-title); color: var(--brass); }
 .d24__badge { margin-top: 10px; }
-.fn-tile { background: var(--surface); border-radius: var(--radius-card); padding: var(--space-4); }
 .d24__tile { margin-top: var(--space-4); }
 .d24__head { display: flex; gap: var(--space-3); align-items: center; }
 .d24__ic {
@@ -30,8 +29,6 @@
 .d24__name { font-size: 18px; line-height: 22px; font-weight: 800; color: var(--brass); }
 .d24__line { font: var(--type-body); color: var(--ink-body); margin: 10px 0 14px; }
 .d24__replay { margin-top: var(--space-3); }
-.fn-health { display: flex; gap: var(--space-2); align-items: flex-start; margin-top: var(--space-4); font: var(--type-caption); color: var(--ink-muted); }
-.fn-health .fn-icon { width: 16px; height: 16px; }
 
 /* ----- Take-off ----- */
 .sl-ride { transform-box: fill-box; transform-origin: 50% 100%; }

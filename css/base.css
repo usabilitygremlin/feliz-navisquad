@@ -16,6 +16,7 @@ button { font: inherit; color: inherit; }
 
 /* ----- App shell: one screen fills the viewport ----- */
 #screen {
+  container-type: size; /* the mode choice sizes and hides its art by the screen size */
   position: relative;
   height: 100vh; height: 100dvh;
   display: flex; flex-direction: column;
@@ -190,3 +191,8 @@ button { font: inherit; color: inherit; }
 .stub-imgs { display: flex; gap: var(--space-1); margin-top: var(--space-1); }
 .stub-imgs img { background: var(--clementine-tint); border-radius: var(--radius-tile); }
 .stub-routine[data-mode="recovery"] .stub-imgs img { background: var(--lavender-tint); }
+
+/* ----- Shared: tile on the sky, health note ----- */
+.fn-tile { background: var(--surface); border-radius: var(--radius-card); padding: var(--space-4); }
+.fn-health { display: flex; gap: var(--space-2); align-items: flex-start; margin-top: var(--space-4); font: var(--type-caption); color: var(--ink-muted); }
+.fn-health .fn-icon { width: 16px; height: 16px; }

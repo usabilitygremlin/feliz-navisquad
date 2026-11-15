@@ -49,6 +49,11 @@
     "recovery": "Lieber dehnen"
   },
   "pickHint": "Wähle eins, dann siehst du die Routine",
+  "elfAlt": {
+    "neutral": "Zwei Elfen warten",
+    "moderate": "Moderat-Elf, spannt die Muskeln an",
+    "recovery": "Recovery-Elf, meditiert"
+  },
   "modeMeta": "{mode} · {count} Übungen · 10 Min.",
   "d24Title": "Santas Schlittenfahrt",
   "d24Badge": "Schlittenfahrt",
