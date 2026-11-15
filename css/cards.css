@@ -1,0 +1,49 @@
+/* Exercise cards (ported from the prototype's "Exercise cards" styles and the fn-dots / fn-desc components). */
+
+.cards { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+/* Reading column on wide windows */
+.card-top, .track, .card-cta { width: 100%; max-width: 520px; margin-left: auto; margin-right: auto; }
+
+.card-top { display: flex; justify-content: space-between; align-items: center; padding: var(--space-3) var(--space-4); }
+.card-top__back { font-size: 13px; }
+
+.track {
+  flex: 1; min-height: 0;
+  display: flex; overflow-x: auto; overflow-y: hidden;
+  scroll-snap-type: x mandatory; overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+.track::-webkit-scrollbar { display: none; }
+.track:focus-visible { outline-offset: -2px; }
+.card { flex: 0 0 100%; scroll-snap-align: start; overflow-y: auto; padding: 0 var(--space-4) var(--space-4); }
+
+.img-area { border-radius: var(--radius-card); padding: 10px; display: grid; gap: var(--space-2); grid-template-columns: 1fr 1fr; margin-bottom: var(--space-4); }
+.img-area--moderate { background: var(--clementine-tint); }
+.img-area--recovery { background: var(--lavender-tint); }
+.img-slot { aspect-ratio: 1 / 0.85; border-radius: var(--radius-tile); overflow: hidden; background: var(--image-slot-bg); }
+.img-slot img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.img-area.n3 .img-slot:first-child { grid-column: 1 / -1; aspect-ratio: 2 / 0.85; }
+
+.ex-name { font: var(--type-exercise-name); letter-spacing: var(--tracking-tight); }
+.story { font: var(--type-body); color: var(--ink-secondary); font-style: italic; margin-top: var(--space-1); }
+.fn-desc { font: var(--type-body); color: var(--ink-body); margin: var(--space-1) 0 var(--space-3); }
+.card-foot { display: flex; justify-content: space-between; align-items: center; margin-top: var(--space-2); }
+.amt { font: var(--type-body-strong); }
+.amt--moderate { color: var(--clementine); }
+.amt--recovery { color: var(--lavender); }
+.amt--day24 { color: var(--brass); }
+
+.fn-dots { display: inline-flex; gap: 6px; align-items: center; }
+.fn-dots .fn-meta { margin-left: 6px; }
+.fn-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dot-inactive); }
+.fn-dots--moderate .fn-dot--on { background: var(--clementine); }
+.fn-dots--recovery .fn-dot--on { background: var(--lavender); }
+.fn-dots--day24 .fn-dot--on { background: var(--brass); }
+
+/* Day 24: easier / harder option per card */
+.opts { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); margin-top: var(--space-3); }
+.opts > div { background: var(--surface); border-radius: var(--radius-tile); padding: 10px 12px; font: var(--type-label); font-weight: 400; color: var(--ink-body); }
+.opts strong { display: block; font-weight: 700; color: var(--brass); margin-bottom: 2px; }
+
+.card-cta { padding: var(--space-3) var(--space-4) var(--space-4); display: flex; gap: 10px; }
+.card-back { flex: none; width: 48px; padding: 0; }

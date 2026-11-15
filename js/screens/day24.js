@@ -1,5 +1,5 @@
 // Day-24 intro: "Santa's sleigh run" (ported from the prototype's renderDay24Intro).
-// Start leads to the day-24 routine (stub until "Exercise cards", #10).
+// Start leads to the day-24 routine (story cards, js/screens/cards.js).
 
 import { LAST_DAY } from '../dates.js';
 import { icon } from '../icons.js';

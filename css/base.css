@@ -23,7 +23,7 @@ button { font: inherit; color: inherit; }
   overflow: hidden;
 }
 
-/* ----- Simple page (stubs, error) ----- */
+/* ----- Simple page (error screen) ----- */
 .fn-page { flex: 1; overflow-y: auto; padding: var(--space-4) max(var(--space-4), calc(50% - 260px)); display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-3); }
 .fn-page--centred { justify-content: center; align-items: stretch; }
 .fn-page__title { font: var(--type-screen-title); color: var(--moonlight); }
@@ -184,15 +184,11 @@ button { font: inherit; color: inherit; }
   }
 }
 
-/* ----- Route stubs (until the mode choice and exercise cards exist) ----- */
-.stub-routine { font: var(--type-body); color: var(--ink-body); }
-.stub-routine ul, .stub-routine ol { margin: var(--space-1) 0 0; padding-left: var(--space-5); }
-.stub-routine li { margin-bottom: var(--space-2); }
-.stub-imgs { display: flex; gap: var(--space-1); margin-top: var(--space-1); }
-.stub-imgs img { background: var(--clementine-tint); border-radius: var(--radius-tile); }
-.stub-routine[data-mode="recovery"] .stub-imgs img { background: var(--lavender-tint); }
 
 /* ----- Shared: tile on the sky, health note ----- */
 .fn-tile { background: var(--surface); border-radius: var(--radius-card); padding: var(--space-4); }
 .fn-health { display: flex; gap: var(--space-2); align-items: flex-start; margin-top: var(--space-4); font: var(--type-caption); color: var(--ink-muted); }
 .fn-health .fn-icon { width: 16px; height: 16px; }
+
+/* ----- Visually hidden, still read by screen readers ----- */
+.fn-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
