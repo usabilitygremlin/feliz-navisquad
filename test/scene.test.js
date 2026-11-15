@@ -88,3 +88,22 @@ test('flight takes 0.9–1.2 s, stronger flicks fly longer', () => {
   assert.equal(throwDuration(7), 1200);
   assert.equal(throwDuration(-1), 900);
 });
+
+test('the ride is open on 24 Dec and stays open (missed) until day 24 is done', async () => {
+  const { rideOpen } = await import('../js/scene.js');
+  assert.equal(rideOpen(at(12, 23, 23), progress()), false);
+  assert.equal(rideOpen(at(12, 24, 0), progress()), true);
+  assert.equal(rideOpen(at(12, 27), progress([1, 2])), true); // Santa keeps waiting
+  assert.equal(rideOpen(at(12, 24), progress([24])), false);
+  assert.equal(rideOpen(at(12, 27), progress([24])), false);
+});
+
+test('snow bank: ride, after day 24 and normal', async () => {
+  const { snowbank } = await import('../js/scene.js');
+  assert.deepEqual(snowbank(at(12, 24), progress([1])), { kind: 'ride', status: { key: 'status24Open', params: {} } });
+  assert.deepEqual(snowbank(at(12, 27), progress([1])), { kind: 'ride', status: { key: 'status24Open', params: {} } });
+  assert.deepEqual(snowbank(at(12, 24), progress([1, 24])), { kind: 'after24', status: { key: 'status24Done', params: {} } });
+  assert.deepEqual(snowbank(at(12, 27), progress([1, 24])), { kind: 'after24', status: { key: 'statusAfter', params: { count: 1 } } });
+  assert.equal(snowbank(at(12, 7), progress([1])).kind, 'normal');
+  assert.equal(snowbank(at(11, 30), progress()).kind, 'normal');
+});

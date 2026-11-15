@@ -16,6 +16,7 @@
   "statusDone": "Geschenk {day} ist geladen · bis morgen",
   "status24Done": "Tag 24 geschafft · Frohe Weihnachten",
   "statusAfter": "Frohe Weihnachten · {count} von 23 Geschenken geladen",
+  "repeatHint": "Lust auf noch eine Runde? Du kannst jedes Workout jederzeit wiederholen.",
   "state": {
     "locked": "noch in der Werkstatt",
     "missed": "liegt im Schnee, noch nicht geladen",

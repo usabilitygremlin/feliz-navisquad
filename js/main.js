@@ -6,7 +6,9 @@ import { createI18n, loadStrings } from './i18n.js';
 import { createRouter } from './router.js';
 import { icon } from './icons.js';
 import { renderCalendar } from './screens/calendar.js';
-import { renderModeStub } from './screens/mode-stub.js';
+import { renderDay24WorkoutStub, renderModeStub } from './screens/mode-stub.js';
+import { renderDay24Intro } from './screens/day24.js';
+import { renderTakeoff } from './screens/takeoff.js';
 
 const root = document.getElementById('screen');
 
@@ -35,7 +37,9 @@ async function start() {
     i18n = createI18n({ strings: await loadStrings(), storage });
     // pending: the present that waits to be thrown onto the sleigh (done moment), or null.
     const app = { storage, i18n, now: () => currentDate(location), pending: null };
-    const router = createRouter(root, { calendar: renderCalendar, mode: renderModeStub }, app);
+    const router = createRouter(root, {
+      calendar: renderCalendar, mode: renderModeStub, day24: renderDay24Intro, workout: renderDay24WorkoutStub, takeoff: renderTakeoff,
+    }, app);
     app.go = (view) => {
       if (view.name !== 'calendar') app.pending = null; // leaving the calendar loads it anyway
       try { router.go(view); } catch (err) { showError(err, i18n); throw err; }

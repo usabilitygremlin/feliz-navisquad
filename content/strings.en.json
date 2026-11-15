@@ -16,6 +16,7 @@
   "statusDone": "Present {day} loaded · see you tomorrow",
   "status24Done": "Day 24 done · Merry Christmas",
   "statusAfter": "Merry Christmas · {count} of 23 presents loaded",
+  "repeatHint": "Want to go another round? Repeat any workout at any time.",
   "state": {
     "locked": "still in the workshop",
     "missed": "in the snow, not loaded yet",
