@@ -1,0 +1,127 @@
+/* Design tokens, written by hand from docs/tokens.json (Winter night).
+   This is the only file in css/ that may contain colour values.
+   Motion values come from docs/prototype.html. */
+
+@font-face {
+  font-family: "Figtree";
+  font-style: normal;
+  font-weight: 400 800; /* variable font: covers 400 (body), 500, 700, 800 */
+  font-display: swap;
+  src: url("../fonts/figtree-latin-wght.woff2") format("woff2");
+}
+
+:root {
+  /* ----- Colour: interface ----- */
+  --sky: #1c2733;
+  --surface: #26364a;
+  --surface-error: #2e2f3b;
+  --track: #2a3846;
+  --ink: #eef1f3;
+  --ink-body: #c4cdd6;
+  --ink-secondary: #a3b1be;
+  --ink-muted: #8c9cab;
+  --moonlight: #d3dce6;
+  --on-moonlight: var(--sky);
+  --clementine: #edb07f;
+  --on-clementine: #2b1a0e;
+  --clementine-tint: #f1e6dc;
+  --lavender: #c5bfe0;
+  --on-lavender: #221e36;
+  --lavender-tint: #e6e3f0;
+  --sage: #8ba790;
+  --sage-deep: #2e4337;
+  --brass: #c9b27c;
+  --brass-deep: #2e2b22;
+  --candle: #e6d3a6;
+  --error: #ef8f86;
+
+  /* ----- Colour: scene ----- */
+  --facade: #2a3a4e;
+  --roof: #27344a;
+  --neighbour-1: #222f3d;
+  --neighbour-2: #24303f;
+  --neighbour-window: #18212c;
+  --neighbour-window-lit: #3a3a30;
+  --window-locked: #141d27;
+  --window-locked-frame: #33465a;
+  --window-locked-ink: #7d8ea0;
+  --window-missed: #3a5069;
+  --window-missed-frame: #6a82a3;
+  --snow: #93a3b4;
+  --snow-cap: #b4c0cc;
+  --smoke: var(--ink-secondary);
+  --dot-inactive: #3a4a5c;
+
+  /* ----- Colour: illustration only (never UI) ----- */
+  --santa-red: #b5473c;
+  --santa-berry: #6e2a27;
+  --elf-fir: #4e7a5f;
+  --elf-fir-deep: #2f4a3a;
+  --elf-moderate: #d8783a;
+  --elf-recovery: #8e84c4;
+  --character-skin: #e2b38f;
+  --character-cheek: #e8907f;
+  --character-nose: #d98c78;
+  --character-white: #f4f1ec;
+  --character-ink: #2b2a28;
+  --character-bell: var(--brass);
+  --image-neutral: #dde3ea;
+
+  /* ----- Colour: derived, as used in the prototype ----- */
+  --menu-btn-bg: rgba(38, 54, 74, 0.85); /* surface at 85 % over the scene */
+  --snowbank-btn-shadow: 0 2px 0 rgba(28, 39, 51, 0.25); /* brass button on snow */
+  --focus-ring: var(--moonlight);
+
+  /* ----- Type ----- */
+  --font-sans: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Each style: size / line height / weight (+ letter spacing where set). */
+  --type-celebration-title: 800 28px/32px var(--font-sans);
+  --type-screen-title: 800 22px/28px var(--font-sans);
+  --type-exercise-name: 800 22px/28px var(--font-sans);
+  --type-tagline: 800 16px/20px var(--font-sans);
+  --type-body: 400 15px/22px var(--font-sans);
+  --type-body-strong: 700 15px/22px var(--font-sans);
+  --type-label: 500 13px/18px var(--font-sans);
+  --type-caption: 400 12px/16px var(--font-sans);
+  --type-button: 700 15px/20px var(--font-sans);
+  --type-window-number: 800 15px/20px var(--font-sans);
+  --tracking-tight: -0.01em; /* celebration-title, exercise-name */
+
+  /* ----- Spacing ----- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* ----- Radii ----- */
+  --radius-window: 6px;
+  --radius-tile: 12px;
+  --radius-card: 16px;
+  --radius-pill: 999px;
+
+  /* ----- Shadows ----- */
+  --halo-today: 0 0 0 4px rgba(211, 220, 230, 0.22);
+  --halo-brass: 0 0 0 3px rgba(201, 178, 124, 0.2);
+  --menu-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+
+  /* ----- Motion (from the prototype) ----- */
+  --dur-quick: 200ms;        /* toast in/out */
+  --dur-switch: 250ms;       /* mode switch thumb, card snap-back */
+  --dur-land: 600ms;         /* landing bounce, snow puff, elf hop */
+  --dur-fade-in: 800ms;      /* celebration messages */
+  --dur-throw-min: 900ms;    /* present flight, gentle flick */
+  --dur-throw-max: 1200ms;   /* present flight, strong flick */
+  --dur-hint-bob: 1.4s;      /* "Swipe up" hint */
+  --dur-pulse-ready: 1.6s;   /* ready present glow */
+  --dur-pulse-ride: 2s;      /* day-24 sleigh outline */
+  --dur-pulse-today: 2.4s;   /* today's present glow */
+  --dur-takeoff: 2.6s;       /* sleigh take-off (finale) */
+  --dur-sleigh-cross: 3s;    /* sleigh across the moon */
+  --dur-toast-visible: 3s;
+  --ease-throw: cubic-bezier(0.3, 0.1, 0.3, 1);
+  --ease-takeoff: cubic-bezier(0.5, 0, 0.75, 0);
+  --ease-out: ease-out;
+  --ease-in-out: ease-in-out;
+}

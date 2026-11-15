@@ -1,0 +1,146 @@
+/* Reset, page and the shared components from docs/prototype.html (fn- classes).
+   Colours only via tokens (css/tokens.css). */
+
+/* ----- Reset and page ----- */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  font: var(--type-body);
+  -webkit-font-smoothing: antialiased;
+  background: var(--sky);
+  color: var(--ink);
+}
+h1, h2, h3, p { margin: 0; }
+img, svg { display: block; }
+button { font: inherit; color: inherit; }
+
+/* ----- Focus ring: visible on every focusable element ----- */
+:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
+
+/* ----- Icon (Lucide, inline SVG from js/icons.js) ----- */
+.fn-icon { width: 1em; height: 1em; flex: none; display: inline-block; }
+
+/* ----- Buttons ----- */
+.fn-btn {
+  font: var(--type-button);
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+  padding: 12px 20px;
+  border-radius: var(--radius-pill);
+  border: 1.5px solid transparent;
+  cursor: pointer;
+}
+.fn-btn--primary { background: var(--moonlight); color: var(--on-moonlight); }
+.fn-btn--moderate { background: var(--clementine); color: var(--on-clementine); }
+.fn-btn--recovery { background: var(--lavender); color: var(--on-lavender); }
+.fn-btn--day24 { background: var(--brass); color: var(--brass-deep); }
+.fn-btn--secondary { background: transparent; border-color: var(--moonlight); color: var(--moonlight); }
+.fn-btn--block { width: 100%; }
+.fn-btn:disabled { opacity: 0.35; cursor: default; }
+
+.fn-link {
+  font: inherit; font-size: 15px; font-weight: 500;
+  color: var(--moonlight); background: none; border: 0; padding: 0;
+  display: inline-flex; align-items: center; gap: var(--space-1);
+  cursor: pointer;
+}
+
+/* ----- Badges ----- */
+.fn-badge {
+  display: inline-flex; align-items: center; gap: var(--space-1);
+  font: var(--type-label);
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+}
+.fn-badge--moderate { background: var(--clementine); color: var(--on-clementine); }
+.fn-badge--recovery { background: var(--lavender); color: var(--on-lavender); }
+.fn-badge--day24 { background: var(--brass); color: var(--brass-deep); }
+.fn-badge--done { background: var(--sage-deep); color: var(--sage); border: 1px solid var(--sage); }
+
+/* ----- Menu button (⋯) and menu panel ----- */
+.fn-menu-btn {
+  position: absolute; top: var(--space-3); right: var(--space-3); z-index: 6;
+  width: 40px; height: 40px;
+  border-radius: var(--radius-pill); border: 0;
+  background: var(--menu-btn-bg); color: var(--moonlight);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+.fn-menu-btn .fn-icon { width: 18px; height: 18px; }
+
+.fn-menu {
+  width: 260px;
+  background: var(--surface);
+  border-radius: var(--radius-card);
+  box-shadow: var(--menu-shadow);
+  overflow: hidden;
+}
+.fn-menu__head {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: var(--space-3) var(--space-4) var(--space-2);
+  font: var(--type-label); color: var(--ink-secondary);
+}
+.fn-menu__item {
+  display: flex; align-items: center; gap: var(--space-3);
+  width: 100%; padding: var(--space-3) var(--space-4);
+  font: inherit; font-size: 15px; color: var(--ink); text-align: left;
+  background: none; border: 0; border-top: 1px solid var(--window-locked-frame);
+  cursor: pointer;
+}
+.fn-menu__item .fn-icon { width: 18px; height: 18px; color: var(--ink-secondary); }
+.fn-menu__text {
+  padding: 0 var(--space-4) var(--space-3) 46px;
+  font: var(--type-label); font-weight: 400; color: var(--ink-body);
+}
+
+/* ----- Toggle (language DE / EN) ----- */
+.fn-toggle {
+  margin-left: auto;
+  display: inline-flex;
+  background: var(--sky);
+  border-radius: var(--radius-pill);
+  padding: 2px;
+}
+.fn-toggle button {
+  font: inherit; font-size: 12px; font-weight: 700;
+  border: 0; background: none; color: var(--ink-secondary);
+  padding: 3px 10px; border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+.fn-toggle button[aria-pressed="true"] { background: var(--moonlight); color: var(--on-moonlight); }
+
+/* ----- Snow bank (bottom of the calendar: tagline + status) ----- */
+.fn-snowbank {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 3;
+  height: 112px;
+  padding: 24px 20px 0;
+  background: var(--snow);
+  border-radius: 60% 60% 0 0 / 16px 16px 0 0;
+  text-align: center;
+  color: var(--sky);
+}
+.fn-snowbank__tagline { font: var(--type-tagline); }
+.fn-snowbank__status { font: var(--type-label); margin-top: var(--space-1); }
+.fn-snowbank--ride { padding-top: 18px; }
+.fn-snowbank .fn-btn--day24 { margin-top: 10px; white-space: nowrap; box-shadow: var(--snowbank-btn-shadow); }
+
+/* ----- Snowfall (flakes are added by the scene) ----- */
+.fn-flake {
+  position: absolute; top: -8px;
+  border-radius: 50%;
+  background: var(--ink);
+  animation: fn-fall linear infinite;
+}
+@keyframes fn-fall { to { transform: translate(var(--dx, 0px), 110vh); } }
+
+/* ----- Reduced motion: no snow, every animation jumps to its end state ----- */
+@media (prefers-reduced-motion: reduce) {
+  .fn-flake { display: none; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
+  }
+}
