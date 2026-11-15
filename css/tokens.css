@@ -71,6 +71,9 @@
   --menu-btn-bg: rgba(38, 54, 74, 0.85); /* surface at 85 % over the scene */
   --snowbank-btn-shadow: 0 2px 0 rgba(28, 39, 51, 0.25); /* brass button on snow */
   --focus-ring: var(--moonlight);
+  --storage-note-bg: rgba(28, 39, 51, 0.9); /* sky at 90 % over the scene */
+  --scene-fir: #2a4433; /* fir trees behind the sleigh */
+  --scene-shadow: #000; /* ground shadows, drawn at ~14 % opacity */
 
   /* ----- Type ----- */
   --font-sans: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;

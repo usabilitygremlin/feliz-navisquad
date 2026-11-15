@@ -20,7 +20,7 @@ A mobile-first Advent calendar with a 10-minute bodyweight workout every day (1â
 ## Target structure
 
 ```
-index.html            single page, all screens rendered by JS (app.html until the calendar issue swaps it in)
+index.html            single page, all screens rendered by JS
 css/                  tokens.css (from docs/tokens.json), base.css, one file per screen
 js/                   main.js, router, dates.js, storage.js, i18n.js, screens/*.js, icons.js
 content/              exercises.json, routines.json, strings.de.json, strings.en.json

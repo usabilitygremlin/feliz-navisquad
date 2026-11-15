@@ -1,1 +1,52 @@
-// Entry point. Screens are rendered into <main id="screen"> by later issues.
+// Entry point: load strings, set up storage, language and routes, show the calendar.
+
+import { currentDate } from './dates.js';
+import { createStorage } from './storage.js';
+import { createI18n, loadStrings } from './i18n.js';
+import { createRouter } from './router.js';
+import { icon } from './icons.js';
+import { renderCalendar } from './screens/calendar.js';
+import { renderModeStub } from './screens/mode-stub.js';
+
+const root = document.getElementById('screen');
+
+const escapeHtml = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+
+// Fail fast, but visibly: without strings there is no translated message, so show the raw error.
+function showError(err, i18n) {
+  const title = i18n ? i18n.t('errTitle') : 'Something went wrong';
+  const body = i18n ? `<p class="fn-notice__body">${i18n.t('errBody')}</p>` : '';
+  const retry = i18n ? i18n.t('retry') : 'Try again';
+  root.innerHTML = `<div class="fn-page fn-page--centred">
+      <div class="fn-notice fn-notice--error" role="alert">
+        <p class="fn-notice__title">${icon('circle-alert')}${escapeHtml(title)}</p>${body}
+        <p class="fn-meta">${escapeHtml(err.message)}</p>
+      </div>
+      <button class="fn-btn fn-btn--primary" data-act="retry">${icon('refresh-cw')}${escapeHtml(retry)}</button>
+    </div>`;
+  root.onkeydown = null;
+  root.onclick = (e) => { if (e.target.closest('[data-act="retry"]')) location.reload(); };
+}
+
+async function start() {
+  let i18n = null;
+  try {
+    const storage = createStorage();
+    i18n = createI18n({ strings: await loadStrings(), storage });
+    const app = { storage, i18n, now: () => currentDate(location) };
+    const router = createRouter(root, { calendar: renderCalendar, mode: renderModeStub }, app);
+    app.go = (view) => {
+      try { router.go(view); } catch (err) { showError(err, i18n); throw err; }
+    };
+    app.go({ name: 'calendar' });
+    // Coming back to an open tab on a later day: redraw with the new date.
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && router.view?.name === 'calendar') app.go(router.view);
+    });
+  } catch (err) {
+    showError(err, i18n);
+    throw err;
+  }
+}
+
+start();
