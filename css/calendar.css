@@ -1,0 +1,42 @@
+/* Calendar scene (ported from the prototype's "Sleigh calendar" and "Calendar scene" styles). */
+
+.fn-scene { position: relative; overflow: hidden; background: var(--sky); }
+.cal { flex: 1; }
+.snowlayer { position: absolute; inset: 0; pointer-events: none; }
+
+/* The scene sits between the menu button and the snow bank, anchored at the bottom. */
+.sl-svg { position: absolute; left: 0; top: 56px; width: 100%; height: calc(100% - 152px); z-index: 2; overflow: visible; }
+
+.gift { cursor: pointer; outline: none; }
+.gift:focus-visible .box { stroke: var(--focus-ring); stroke-width: 3; }
+.gift:hover .box { filter: brightness(1.08); }
+.gift-today .glow { animation: fn-giftpulse var(--dur-pulse-today) var(--ease-in-out) infinite; }
+@keyframes fn-giftpulse { 50% { opacity: 0.34; } }
+
+/* Pre-December countdown */
+.pre-note {
+  position: absolute; z-index: 5; left: 50%; top: 45%; transform: translate(-50%, -50%);
+  width: min(300px, 80%);
+  text-align: center;
+  background: var(--surface);
+  border-radius: var(--radius-card);
+  padding: var(--space-5) var(--space-4);
+  box-shadow: var(--menu-shadow);
+}
+.pre-days { font-size: 56px; line-height: 56px; font-weight: 800; color: var(--moonlight); }
+.pre-title { font: var(--type-tagline); margin: var(--space-2) 0 var(--space-1); }
+
+/* Shown when progress can't be saved */
+.storage-note {
+  position: absolute; top: var(--space-3); left: var(--space-3); right: 64px; z-index: 6;
+  display: flex; gap: var(--space-2); align-items: center;
+  font: var(--type-caption); color: var(--ink-body);
+  border: 1px solid var(--window-missed-frame); border-radius: var(--radius-tile);
+  padding: 6px 10px;
+  background: var(--storage-note-bg);
+}
+.storage-note .fn-icon { width: 16px; height: 16px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .gift-today .glow { animation: none; }
+}
