@@ -10,7 +10,7 @@ import { renderCalendar } from './screens/calendar.js';
 import { renderMode } from './screens/mode.js';
 import { renderCards } from './screens/cards.js';
 import { renderDay24Intro } from './screens/day24.js';
-import { renderTakeoff } from './screens/takeoff.js';
+import { renderCelebration } from './screens/celebration.js';
 
 const root = document.getElementById('screen');
 
@@ -43,7 +43,7 @@ async function start() {
     // pending: the present that waits to be thrown onto the sleigh (done moment), or null.
     const app = { storage, i18n, content: content.value, now: () => currentDate(location), pending: null };
     const router = createRouter(root, {
-      calendar: renderCalendar, mode: renderMode, day24: renderDay24Intro, workout: renderCards, takeoff: renderTakeoff,
+      calendar: renderCalendar, mode: renderMode, day24: renderDay24Intro, workout: renderCards, celebration: renderCelebration,
     }, app);
     app.go = (view) => {
       if (view.name !== 'calendar') app.pending = null; // leaving the calendar loads it anyway
