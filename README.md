@@ -5,7 +5,7 @@ A mobile-first Advent calendar (1–24 December 2026) with a 10-minute bodyweigh
 ## Run locally
 
 ```sh
-python3 -m http.server 8000
+python -m http.server 8000
 ```
 
 Then open http://localhost:8000/app.html (the app) or http://localhost:8000 (the public placeholder). On localhost you can simulate a date with `?date=2026-12-24`.
