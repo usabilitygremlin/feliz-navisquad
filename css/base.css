@@ -182,3 +182,11 @@ button { font: inherit; color: inherit; }
     scroll-behavior: auto !important;
   }
 }
+
+/* ----- Route stubs (until the mode choice and exercise cards exist) ----- */
+.stub-routine { font: var(--type-body); color: var(--ink-body); }
+.stub-routine ul, .stub-routine ol { margin: var(--space-1) 0 0; padding-left: var(--space-5); }
+.stub-routine li { margin-bottom: var(--space-2); }
+.stub-imgs { display: flex; gap: var(--space-1); margin-top: var(--space-1); }
+.stub-imgs img { background: var(--clementine-tint); border-radius: var(--radius-tile); }
+.stub-routine[data-mode="recovery"] .stub-imgs img { background: var(--lavender-tint); }

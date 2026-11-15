@@ -3,6 +3,7 @@
 import { currentDate } from './dates.js';
 import { createStorage } from './storage.js';
 import { createI18n, loadStrings } from './i18n.js';
+import { loadContent } from './content.js';
 import { createRouter } from './router.js';
 import { icon } from './icons.js';
 import { renderCalendar } from './screens/calendar.js';
@@ -34,9 +35,12 @@ async function start() {
   let i18n = null;
   try {
     const storage = createStorage();
-    i18n = createI18n({ strings: await loadStrings(), storage });
+    const [strings, content] = await Promise.allSettled([loadStrings(), loadContent()]);
+    if (strings.status === 'rejected') throw strings.reason;
+    i18n = createI18n({ strings: strings.value, storage });
+    if (content.status === 'rejected') throw content.reason; // invalid content: fail fast, translated error
     // pending: the present that waits to be thrown onto the sleigh (done moment), or null.
-    const app = { storage, i18n, now: () => currentDate(location), pending: null };
+    const app = { storage, i18n, content: content.value, now: () => currentDate(location), pending: null };
     const router = createRouter(root, {
       calendar: renderCalendar, mode: renderModeStub, day24: renderDay24Intro, workout: renderDay24WorkoutStub, takeoff: renderTakeoff,
     }, app);

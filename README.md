@@ -18,4 +18,14 @@ node --test
 
 Needs Node 20+. Uses the built-in test runner, so there's nothing to install.
 
+## Content
+
+Workouts live in `content/exercises.json` and `content/routines.json`, and exercise images live in `img/exercises/`. The format is described at the top of `js/content.js`. Check the content before merging any change to it:
+
+```sh
+node scripts/validate-content.mjs
+```
+
+It exits with an error, and lists every problem, on a broken reference, a missing image or translation, an empty string, or a day with only one mode. Days without content are listed but allowed until launch. The same check also runs as part of `node --test`.
+
 Product decisions, the approved prototype and design tokens are in [`docs/`](docs/). Contributor rules are in [`CLAUDE.md`](CLAUDE.md).

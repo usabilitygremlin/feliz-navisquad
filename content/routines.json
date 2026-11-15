@@ -1,0 +1,212 @@
+{
+  "days": {
+    "1": {
+      "moderate": {
+        "name": {
+          "de": "Wachmacher",
+          "en": "Wake-up"
+        },
+        "exercises": [
+          {
+            "id": "lunge",
+            "amount": {
+              "de": "3 × 16",
+              "en": "3 × 16"
+            }
+          },
+          {
+            "id": "plank",
+            "amount": {
+              "de": "3 × 30 s",
+              "en": "3 × 30 s"
+            }
+          },
+          {
+            "id": "march",
+            "amount": {
+              "de": "2 × 60 s",
+              "en": "2 × 60 s"
+            }
+          },
+          {
+            "id": "squat",
+            "amount": {
+              "de": "3 × 12",
+              "en": "3 × 12"
+            }
+          },
+          {
+            "id": "pushup",
+            "amount": {
+              "de": "3 × 8",
+              "en": "3 × 8"
+            }
+          }
+        ]
+      },
+      "recovery": {
+        "name": {
+          "de": "Sanfter Start",
+          "en": "Slow start"
+        },
+        "exercises": [
+          {
+            "id": "child",
+            "amount": {
+              "de": "90 s",
+              "en": "90 s"
+            }
+          },
+          {
+            "id": "hamstring",
+            "amount": {
+              "de": "2 × 45 s",
+              "en": "2 × 45 s"
+            }
+          },
+          {
+            "id": "figure4",
+            "amount": {
+              "de": "2 × 45 s",
+              "en": "2 × 45 s"
+            }
+          },
+          {
+            "id": "cat-cow",
+            "amount": {
+              "de": "60 s",
+              "en": "60 s"
+            }
+          },
+          {
+            "id": "hipflexor",
+            "amount": {
+              "de": "2 × 45 s",
+              "en": "2 × 45 s"
+            }
+          }
+        ]
+      }
+    },
+    "24": {
+      "day24": {
+        "name": {
+          "de": "Santas Schlittenfahrt",
+          "en": "Santa’s sleigh run"
+        },
+        "cards": [
+          {
+            "name": {
+              "en": "Load the sleigh",
+              "de": "Den Schlitten beladen"
+            },
+            "story": {
+              "en": "The presents are piled up high. Time to lift them onto the sleigh.",
+              "de": "Die Geschenke stapeln sich. Ab damit auf den Schlitten."
+            },
+            "move": {
+              "en": "Squats",
+              "de": "Kniebeugen"
+            },
+            "easier": {
+              "en": "Half squats, 2 × 10",
+              "de": "Halbe Kniebeugen, 2 × 10"
+            },
+            "harder": {
+              "en": "Slow squats, 3 × 15",
+              "de": "Langsame Kniebeugen, 3 × 15"
+            }
+          },
+          {
+            "name": {
+              "en": "Climb onto the roof",
+              "de": "Aufs Dach klettern"
+            },
+            "story": {
+              "en": "First stop. Up we go.",
+              "de": "Erste Station. Hoch geht’s."
+            },
+            "move": {
+              "en": "Step-ups or lunges",
+              "de": "Step-ups oder Ausfallschritte"
+            },
+            "easier": {
+              "en": "Step-ups on a low step, 2 × 8 per leg",
+              "de": "Step-ups auf eine niedrige Stufe, 2 × 8 pro Bein"
+            },
+            "harder": {
+              "en": "Reverse lunges, 3 × 10 per leg",
+              "de": "Ausfallschritte rückwärts, 3 × 10 pro Bein"
+            }
+          },
+          {
+            "name": {
+              "en": "Squeeze down the chimney",
+              "de": "Durch den Schornstein"
+            },
+            "story": {
+              "en": "It’s a tight fit. Stay low and steady.",
+              "de": "Ganz schön eng. Tief und ruhig bleiben."
+            },
+            "move": {
+              "en": "Low plank hold",
+              "de": "Tiefer Unterarmstütz"
+            },
+            "easier": {
+              "en": "Plank on knees, 3 × 20 s",
+              "de": "Stütz auf den Knien, 3 × 20 s"
+            },
+            "harder": {
+              "en": "Forearm plank, 3 × 40 s",
+              "de": "Unterarmstütz, 3 × 40 s"
+            }
+          },
+          {
+            "name": {
+              "en": "Deliver the presents",
+              "de": "Geschenke verteilen"
+            },
+            "story": {
+              "en": "One under the tree, one by the sofa, one in the far corner…",
+              "de": "Eins unter den Baum, eins neben das Sofa, eins in die Ecke…"
+            },
+            "move": {
+              "en": "Reaching side lunges",
+              "de": "Seitliche Ausfallschritte mit Greifen"
+            },
+            "easier": {
+              "en": "Small side steps with a reach, 2 × 8 per side",
+              "de": "Kleine Seitschritte mit Greifen, 2 × 8 pro Seite"
+            },
+            "harder": {
+              "en": "Deep side lunges with a reach, 3 × 10 per side",
+              "de": "Tiefe Seitausfallschritte mit Greifen, 3 × 10 pro Seite"
+            }
+          },
+          {
+            "name": {
+              "en": "Rest by the tree",
+              "de": "Ausruhen am Baum"
+            },
+            "story": {
+              "en": "All delivered. Sit by the lights for a moment.",
+              "de": "Alles verteilt. Kurz bei den Lichtern sitzen."
+            },
+            "move": {
+              "en": "Stretch & breathing",
+              "de": "Dehnen & Atmen"
+            },
+            "easier": {
+              "en": "Child’s pose, then 2 min breathing",
+              "de": "Kindhaltung, dann 2 Min. atmen"
+            },
+            "harder": {
+              "en": "Child’s pose + figure-four, then 3 min breathing",
+              "de": "Kindhaltung + Vierer-Dehnung, dann 3 Min. atmen"
+            }
+          }
+        ]
+      }
+    }
+  }
+}
