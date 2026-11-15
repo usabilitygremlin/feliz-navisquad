@@ -1,10 +1,11 @@
 // Calendar: the sleigh in the snow at night (ported from the prototype's renderCalendar,
 // sleighHtml, giftSvg, firSvg, ELF and flakes). Day 24's ride (#7), the done moment (#5)
-// and the menu (#6) are separate issues.
+// are separate issues. The ⋯ menu is in menu.js.
 
 import { daysUntilStart, phase } from '../dates.js';
 import { GIFT, MISSED_SCALE, sceneLayout, statusLine } from '../scene.js';
 import { icon } from '../icons.js';
+import { handleMenuAction, menuHtml } from './menu.js';
 
 const reducedMotion = () => globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
@@ -93,7 +94,16 @@ function countdown(i18n, now) {
       <div class="pre-title">${i18n.t('preTitle')}</div><div class="fn-meta">${line}</div></div>`;
 }
 
-/** Renders the calendar into `root`. `view.focusDay` focuses that present (e.g. coming back from it). */
+// Esc closes the menu wherever focus is (also on <body> after a tap on plain text).
+let escape = null;
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && escape && document.querySelector('.fn-menu')) { e.preventDefault(); escape(); }
+});
+
+/**
+ * Renders the calendar into `root`. `view.focusDay` focuses that present (e.g. coming back from it);
+ * `view.focus` is a selector for the element to focus; `view.menu` / `view.section`: see menu.js.
+ */
 export function renderCalendar(root, view, app) {
   const { i18n, storage } = app;
   const now = app.now();
@@ -108,7 +118,9 @@ export function renderCalendar(root, view, app) {
       ${sleighSvg(i18n, L, modes)}
       ${phase(now) === 'pre' ? countdown(i18n, now) : ''}
       ${storage.available ? '' : `<div class="storage-note">${icon('info')}<span>${i18n.t('storageNote')}</span></div>`}
-      <button class="fn-menu-btn" aria-label="${i18n.t('menu')}" aria-expanded="false">${icon('ellipsis')}</button>
+      <button class="fn-menu-btn" data-act="menu" aria-label="${i18n.t('menu')}" aria-haspopup="dialog"
+        aria-expanded="${Boolean(view.menu)}"${view.menu ? ' aria-controls="menu"' : ''}>${icon('ellipsis')}</button>
+      ${menuHtml(view, i18n, now)}
       <div class="fn-snowbank">
         <p class="fn-snowbank__tagline">${i18n.t('tagline')}</p>
         <p class="fn-snowbank__status">${i18n.t(status.key, status.params)}</p>
@@ -117,9 +129,11 @@ export function renderCalendar(root, view, app) {
 
   const open = (el) => app.go({ name: 'mode', day: Number(el.dataset.day) });
   root.onclick = (e) => {
-    const el = e.target.closest('[data-act="open"]');
-    if (el) open(el);
+    const el = e.target.closest('[data-act]');
+    if (!el || handleMenuAction(el, view, app)) return;
+    if (el.dataset.act === 'open') open(el);
   };
+  escape = view.menu ? () => app.go({ name: 'calendar', focus: '.fn-menu-btn' }) : null;
   root.onkeydown = (e) => {
     if (e.key !== 'Enter' && e.key !== ' ') return;
     const el = e.target.closest?.('[data-act="open"]');
@@ -129,4 +143,5 @@ export function renderCalendar(root, view, app) {
   };
 
   if (view.focusDay) root.querySelector(`.gift[data-day="${view.focusDay}"]`)?.focus({ preventScroll: true });
+  if (view.focus) root.querySelector(view.focus)?.focus({ preventScroll: true });
 }

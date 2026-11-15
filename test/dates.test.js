@@ -93,3 +93,12 @@ test('a malformed override on localhost fails loudly', () => {
     assert.throws(() => devDateOverride({ hostname: 'localhost', search: `?date=${value}` }), /Invalid \?date/, value);
   }
 });
+
+test('lockedDays lists the days that are still in the workshop', async () => {
+  const { lockedDays } = await import('../js/dates.js');
+  assert.equal(lockedDays(at(11, 15)).length, 24);
+  assert.deepEqual(lockedDays(at(12, 21)), [22, 23, 24]);
+  assert.deepEqual(lockedDays(at(12, 23, 23, 59)), [24]);
+  assert.deepEqual(lockedDays(at(12, 24, 0, 0)), []);
+  assert.deepEqual(lockedDays(at(12, 27)), []);
+});
