@@ -99,7 +99,7 @@ export function renderCards(root, view, app) {
     if (act === 'next') goTo(index + 1);
     if (act === 'finish') {
       finishDay(app, day, mode === 'day24' ? undefined : mode);
-      app.go(day === LAST_DAY ? { name: 'takeoff' } : { name: 'calendar', focusDay: day });
+      app.go(day === LAST_DAY ? { name: 'celebration' } : { name: 'calendar', focusDay: day });
     }
   };
   root.onkeydown = (e) => {

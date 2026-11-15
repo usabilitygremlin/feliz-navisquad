@@ -77,6 +77,7 @@
   --santa-nose: #c9705f; /* named in tokens.json under character-nose */
   --santa-moustache-line: #d9d4cc; /* outline of Santa's moustache */
   --santa-mouth: #8e352d;
+  --moon-glow: 0 0 60px 10px rgba(211, 220, 230, 0.18); /* moonlight halo, celebration only */
   --image-slot-bg: rgba(255, 255, 255, 0.35); /* behind each exercise image, on the tinted image area */
 
   /* ----- Type ----- */
