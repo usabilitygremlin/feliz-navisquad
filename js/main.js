@@ -33,9 +33,11 @@ async function start() {
   try {
     const storage = createStorage();
     i18n = createI18n({ strings: await loadStrings(), storage });
-    const app = { storage, i18n, now: () => currentDate(location) };
+    // pending: the present that waits to be thrown onto the sleigh (done moment), or null.
+    const app = { storage, i18n, now: () => currentDate(location), pending: null };
     const router = createRouter(root, { calendar: renderCalendar, mode: renderModeStub }, app);
     app.go = (view) => {
+      if (view.name !== 'calendar') app.pending = null; // leaving the calendar loads it anyway
       try { router.go(view); } catch (err) { showError(err, i18n); throw err; }
     };
     app.go({ name: 'calendar' });

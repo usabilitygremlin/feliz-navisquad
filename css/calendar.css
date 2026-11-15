@@ -37,6 +37,13 @@
 }
 .storage-note .fn-icon { width: 16px; height: 16px; }
 
+/* Done moment: the present waits to be thrown onto the sleigh */
+.gift-ready { cursor: grab; touch-action: none; }
+.gift-ready:active { cursor: grabbing; }
+.gift-ready .glow { animation: fn-giftpulse var(--dur-pulse-ready) var(--ease-in-out) infinite; }
+.throw-hint { animation: fn-hintbob var(--dur-hint-bob) var(--ease-in-out) infinite; pointer-events: none; }
+@keyframes fn-hintbob { 50% { transform: translateY(-6px); } }
+
 @media (prefers-reduced-motion: reduce) {
-  .gift-today .glow { animation: none; }
+  .gift-today .glow, .gift-ready .glow, .throw-hint { animation: none; }
 }
