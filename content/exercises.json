@@ -1,0 +1,274 @@
+{
+  "exercises": [
+    {
+      "id": "cat-cow",
+      "name": {
+        "de": "Katze-Kuh",
+        "en": "Cat-cow"
+      },
+      "description": {
+        "de": "Im Vierfüßlerstand den Rücken im Atemrhythmus abwechselnd rund machen und sinken lassen.",
+        "en": "On all fours, round then arch your back slowly with each breath."
+      },
+      "images": [
+        {
+          "src": "img/exercises/cat-cow-1.svg",
+          "alt": {
+            "de": "Schritt 1: im Vierfüßlerstand einatmen, Bauch sinken lassen, Blick nach vorn oben",
+            "en": "Step 1: on all fours, breathe in, let the belly sink, look up"
+          }
+        },
+        {
+          "src": "img/exercises/cat-cow-2.svg",
+          "alt": {
+            "de": "Schritt 2: ausatmen, Rücken rund machen, Kinn zur Brust",
+            "en": "Step 2: breathe out, round the back up, chin to chest"
+          }
+        }
+      ]
+    },
+    {
+      "id": "child",
+      "name": {
+        "de": "Kindhaltung",
+        "en": "Child’s pose"
+      },
+      "description": {
+        "de": "Knie weit, Gesäß Richtung Fersen, Arme lang nach vorn. Ruhig atmen.",
+        "en": "Knees wide, sit back towards your heels, arms long in front. Breathe slowly."
+      },
+      "images": [
+        {
+          "src": "img/exercises/child-1.svg",
+          "alt": {
+            "de": "Schritt 1: knien, Knie weit, Gesäß auf die Fersen",
+            "en": "Step 1: kneel, knees wide, sit back on your heels"
+          }
+        },
+        {
+          "src": "img/exercises/child-2.svg",
+          "alt": {
+            "de": "Schritt 2: nach vorn ablegen, Arme lang, Stirn ablegen, ruhig atmen",
+            "en": "Step 2: fold forward, arms long, forehead down, breathe slowly"
+          }
+        }
+      ]
+    },
+    {
+      "id": "hipflexor",
+      "name": {
+        "de": "Hüftbeuger-Dehnung",
+        "en": "Hip flexor stretch"
+      },
+      "description": {
+        "de": "Im Halbkniestand die Hüfte sanft nach vorn schieben. Nach der Hälfte Seite wechseln.",
+        "en": "Half-kneeling, gently push your hips forward. Switch sides halfway."
+      },
+      "images": [
+        {
+          "src": "img/exercises/hipflexor-1.svg",
+          "alt": {
+            "de": "Schritt 1: Halbkniestand, vorderes Knie über dem Knöchel, hinteres Knie am Boden",
+            "en": "Step 1: half-kneel, front knee over the ankle, back knee down"
+          }
+        },
+        {
+          "src": "img/exercises/hipflexor-2.svg",
+          "alt": {
+            "de": "Schritt 2: Hüfte sanft nach vorn schieben, hinterer Arm nach oben, nach der Hälfte wechseln",
+            "en": "Step 2: gently push the hips forward, back arm up, switch sides halfway"
+          }
+        }
+      ]
+    },
+    {
+      "id": "hamstring",
+      "name": {
+        "de": "Beinrückseite dehnen",
+        "en": "Hamstring stretch"
+      },
+      "description": {
+        "de": "Im Sitzen ein Bein lang, aus der Hüfte nach vorn neigen, bis du eine Dehnung spürst.",
+        "en": "Sit with one leg long and hinge forward from the hips until you feel a stretch."
+      },
+      "images": [
+        {
+          "src": "img/exercises/hamstring-1.svg",
+          "alt": {
+            "de": "Schritt 1: aufrecht sitzen, ein Bein lang, der andere Fuß angestellt",
+            "en": "Step 1: sit tall, one leg long, the other foot in"
+          }
+        },
+        {
+          "src": "img/exercises/hamstring-2.svg",
+          "alt": {
+            "de": "Schritt 2: aus der Hüfte nach vorn neigen, bis du eine Dehnung spürst, atmen",
+            "en": "Step 2: hinge forward from the hips until you feel a stretch, breathe"
+          }
+        }
+      ]
+    },
+    {
+      "id": "figure4",
+      "name": {
+        "de": "Vierer-Dehnung",
+        "en": "Figure-four stretch"
+      },
+      "description": {
+        "de": "In Rückenlage einen Knöchel aufs andere Knie legen und das Bein sanft heranziehen.",
+        "en": "Lying on your back, cross one ankle over the other knee and gently pull the leg in."
+      },
+      "images": [
+        {
+          "src": "img/exercises/figure4-1.svg",
+          "alt": {
+            "de": "Schritt 1: auf den Rücken legen, Knie gebeugt, Füße am Boden",
+            "en": "Step 1: lie on your back, knees bent, feet on the floor"
+          }
+        },
+        {
+          "src": "img/exercises/figure4-2.svg",
+          "alt": {
+            "de": "Schritt 2: einen Knöchel aufs andere Knie legen, Beine sanft heranziehen, dann wechseln",
+            "en": "Step 2: cross one ankle over the other knee and gently draw the legs in, then switch"
+          }
+        }
+      ]
+    },
+    {
+      "id": "squat",
+      "name": {
+        "de": "Kniebeuge",
+        "en": "Squat"
+      },
+      "description": {
+        "de": "Füße hüftbreit, Gesäß nach hinten unten, dann wieder aufrichten. Ruhig weiteratmen.",
+        "en": "Feet hip-width, sit back like loading the sleigh, stand tall. Breathe steadily."
+      },
+      "images": [
+        {
+          "src": "img/exercises/squat-1.svg",
+          "alt": {
+            "de": "Schritt 1: aufrecht stehen, Füße hüftbreit",
+            "en": "Step 1: stand tall, feet hip-width apart"
+          }
+        },
+        {
+          "src": "img/exercises/squat-2.svg",
+          "alt": {
+            "de": "Schritt 2: Gesäß nach hinten unten, Brust aufrecht, dann wieder hochdrücken",
+            "en": "Step 2: sit back and down, chest up, then push back up"
+          }
+        }
+      ]
+    },
+    {
+      "id": "lunge",
+      "name": {
+        "de": "Ausfallschritt rückwärts",
+        "en": "Reverse lunge"
+      },
+      "description": {
+        "de": "Einen Schritt zurück, hinteres Knie Richtung Boden senken, zurück. Beine abwechseln.",
+        "en": "Step back, lower the back knee towards the floor, return. Alternate legs."
+      },
+      "images": [
+        {
+          "src": "img/exercises/lunge-1.svg",
+          "alt": {
+            "de": "Schritt 1: aufrecht stehen, Hände an der Hüfte",
+            "en": "Step 1: stand tall, hands on hips"
+          }
+        },
+        {
+          "src": "img/exercises/lunge-2.svg",
+          "alt": {
+            "de": "Schritt 2: einen Schritt zurück, hinteres Knie Richtung Boden, vorderes Knie über dem Knöchel",
+            "en": "Step 2: step back and lower the back knee towards the floor, front knee over the ankle"
+          }
+        }
+      ]
+    },
+    {
+      "id": "pushup",
+      "name": {
+        "de": "Liegestütz (gern auf Knien)",
+        "en": "Push-up (knees are fine)"
+      },
+      "description": {
+        "de": "Hände unter den Schultern, Brust absenken und wieder hochdrücken.",
+        "en": "Hands under shoulders, lower your chest and push back up."
+      },
+      "images": [
+        {
+          "src": "img/exercises/pushup-1.svg",
+          "alt": {
+            "de": "Schritt 1: Hände unter den Schultern, Knie am Boden (oder auf den Zehen)",
+            "en": "Step 1: hands under the shoulders, knees down (or on toes)"
+          }
+        },
+        {
+          "src": "img/exercises/pushup-2.svg",
+          "alt": {
+            "de": "Schritt 2: Brust Richtung Boden senken, dann wieder hochdrücken",
+            "en": "Step 2: lower the chest towards the floor, then push back up"
+          }
+        }
+      ]
+    },
+    {
+      "id": "plank",
+      "name": {
+        "de": "Unterarmstütz",
+        "en": "Forearm plank"
+      },
+      "description": {
+        "de": "Unterarme am Boden, Körper in einer Linie von Kopf bis Fersen. Weiteratmen.",
+        "en": "Forearms down, body in one line from head to heels. Keep breathing."
+      },
+      "images": [
+        {
+          "src": "img/exercises/plank-1.svg",
+          "alt": {
+            "de": "Schritt 1: Unterarme unter den Schultern, Knie am Boden",
+            "en": "Step 1: forearms under the shoulders, knees on the floor"
+          }
+        },
+        {
+          "src": "img/exercises/plank-2.svg",
+          "alt": {
+            "de": "Schritt 2: Knie anheben, Körper in einer Linie von Kopf bis Fersen, weiteratmen",
+            "en": "Step 2: lift the knees, body in one line from head to heels, keep breathing"
+          }
+        }
+      ]
+    },
+    {
+      "id": "march",
+      "name": {
+        "de": "Marschieren mit hohen Knien",
+        "en": "High-knee march"
+      },
+      "description": {
+        "de": "Auf der Stelle marschieren, Knie hoch. Ohne Springen.",
+        "en": "March on the spot, lifting your knees high. No jumping."
+      },
+      "images": [
+        {
+          "src": "img/exercises/march-1.svg",
+          "alt": {
+            "de": "Schritt 1: ein Knie hoch, Gegenarm nach vorn",
+            "en": "Step 1: lift one knee high, opposite arm forward"
+          }
+        },
+        {
+          "src": "img/exercises/march-2.svg",
+          "alt": {
+            "de": "Schritt 2: Seite wechseln, auf der Stelle marschieren, ohne zu springen",
+            "en": "Step 2: switch sides, march on the spot without jumping"
+          }
+        }
+      ]
+    }
+  ]
+}
