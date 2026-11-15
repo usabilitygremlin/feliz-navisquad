@@ -13,7 +13,7 @@ A mobile-first Advent calendar with a 10-minute bodyweight workout every day (1â
 - Plain HTML, CSS and JavaScript (ES modules). **No build step, no framework, no npm runtime dependencies.**
 - Content is JSON in `content/`. Illustrations are SVG files in `img/`.
 - Fonts: Figtree, self-hosted (woff2) in `fonts/`. Icons: Lucide, as inline SVG (copy the paths you need into `js/icons.js`).
-- Local dev: `python3 -m http.server 8000` in the repo root, then open http://localhost:8000.
+- Local dev: `python -m http.server 8000` in the repo root, then open http://localhost:8000.
 - Tests: `node --test` (Node 20+, built-in runner, no dependencies) for pure logic in `js/` (dates, storage, layout, content validation). DOM code is checked manually in the browser.
 - `scripts/validate-content.mjs` must pass before any content change is merged.
 
