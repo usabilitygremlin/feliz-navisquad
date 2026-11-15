@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Feliz Navisquad – prototype</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;700;800&display=swap">
+<style>
+  /* ===== Tokens (Feliz Navisquad Design System, Winter night) ===== */
+  :root {
+    --sky:#1c2733; --surface:#26364a; --surface-error:#2e2f3b; --track:#2a3846;
+    --ink:#eef1f3; --ink-body:#c4cdd6; --ink-secondary:#a3b1be; --ink-muted:#8c9cab;
+    --moonlight:#d3dce6; --on-moonlight:#1c2733;
+    --clementine:#edb07f; --on-clementine:#2b1a0e; --clementine-tint:#f1e6dc;
+    --lavender:#c5bfe0; --on-lavender:#221e36; --lavender-tint:#e6e3f0;
+    --sage:#8ba790; --sage-deep:#2e4337; --brass:#c9b27c; --brass-deep:#2e2b22; --candle:#e6d3a6;
+    --error:#ef8f86;
+    --facade:#2a3a4e; --roof:#27344a; --neighbour-1:#222f3d; --neighbour-2:#24303f;
+    --neighbour-window:#18212c; --neighbour-window-lit:#3a3a30;
+    --window-locked:#141d27; --window-locked-frame:#33465a; --window-locked-ink:#7d8ea0;
+    --window-missed:#3a5069; --window-missed-frame:#6a82a3;
+    --snow:#93a3b4; --snow-cap:#b4c0cc; --smoke:#a3b1be; --dot-inactive:#3a4a5c;
+    --font-sans:"Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:24px; --space-6:32px;
+    --radius-window:6px; --radius-tile:12px; --radius-card:16px; --radius-pill:999px;
+    --halo-today:0 0 0 4px rgba(211,220,230,.22); --halo-brass:0 0 0 3px rgba(201,178,124,.2);
+    --menu-shadow:0 8px 24px rgba(0,0,0,.35);
+  }
+
+  /* ===== Component bundle (from the design system, fn- classes) ===== */
+  .fn-icon { width:1em; height:1em; flex:none; }
+  .fn-btn { font:inherit; font-size:15px; line-height:20px; font-weight:700; display:inline-flex; align-items:center; justify-content:center; gap:var(--space-2); padding:12px 20px; border-radius:var(--radius-pill); border:1.5px solid transparent; cursor:pointer; }
+  .fn-btn:focus-visible, .fn-link:focus-visible, .fn-window:focus-visible, .fn-menu-btn:focus-visible { outline:2px solid var(--moonlight); outline-offset:3px; }
+  .fn-btn--primary { background:var(--moonlight); color:var(--on-moonlight); }
+  .fn-btn--moderate { background:var(--clementine); color:var(--on-clementine); }
+  .fn-btn--recovery { background:var(--lavender); color:var(--on-lavender); }
+  .fn-btn--day24 { background:var(--brass); color:var(--sky); }
+  .fn-btn--secondary { background:transparent; border-color:var(--moonlight); color:var(--moonlight); }
+  .fn-btn--block { width:100%; }
+  .fn-link { font:inherit; font-size:15px; font-weight:500; color:var(--moonlight); background:none; border:0; display:inline-flex; align-items:center; gap:var(--space-1); cursor:pointer; padding:0; }
+  .fn-badge { display:inline-flex; align-items:center; gap:var(--space-1); font-size:13px; line-height:18px; font-weight:500; padding:3px 10px; border-radius:var(--radius-pill); }
+  .fn-badge--moderate { background:var(--clementine); color:var(--on-clementine); }
+  .fn-badge--recovery { background:var(--lavender); color:var(--on-lavender); }
+  .fn-badge--day24 { background:var(--brass); color:var(--sky); }
+  .fn-badge--done { background:var(--sage-deep); color:var(--sage); border:1px solid var(--sage); }
+
+  .fn-window { position:relative; width:46px; height:46px; border-radius:var(--radius-window) var(--radius-window) 4px 4px; display:flex; align-items:center; justify-content:center; font:inherit; font-size:15px; font-weight:800; border:1.5px solid transparent; cursor:pointer; padding:0; }
+  .fn-window .fn-icon { width:16px; height:16px; }
+  /* Number always visible; done / door 24 add a small check or star in the top-right corner */
+  .win-badge { position:absolute; top:3px; right:3px; display:flex; }
+  .win-badge .fn-icon { width:11px; height:11px; }
+  .fn-window--locked { background:var(--window-locked); border-color:var(--window-locked-frame); color:var(--window-locked-ink); }
+  .fn-window--missed { background:var(--window-missed); border-color:var(--window-missed-frame); color:var(--moonlight); }
+  .fn-window--today { background:var(--moonlight); color:var(--on-moonlight); box-shadow:var(--halo-today); }
+  .fn-window--done { background:var(--sage-deep); border-color:var(--sage); color:var(--sage); }
+  .fn-window--done::after { content:""; position:absolute; left:-3px; right:-3px; bottom:-5px; height:5px; border-radius:3px; background:var(--snow-cap); }
+  .fn-window--24 { background:var(--brass-deep); border:2px solid var(--brass); color:var(--brass); box-shadow:var(--halo-brass); }
+
+  .fn-scene { position:relative; overflow:hidden; background:var(--sky); }
+  .fn-house-wall { background:var(--facade); display:grid; grid-template-columns:repeat(4,1fr); gap:var(--space-3) var(--space-2); justify-items:center; padding:14px 12px 18px; }
+  .fn-snowbank { position:absolute; left:0; right:0; bottom:0; background:var(--snow); border-radius:60% 60% 0 0 / 16px 16px 0 0; text-align:center; color:var(--sky); }
+  .fn-flake { position:absolute; top:-8px; border-radius:50%; background:var(--ink); animation:fn-fall linear infinite; }
+  @keyframes fn-fall { to { transform:translate(var(--dx,0px), 110vh); } }
+  .fn-smoke { animation:fn-sway 6s ease-in-out infinite; }
+  @keyframes fn-sway { 50% { transform:translateX(3px); } }
+  .fn-menu-btn { position:absolute; top:var(--space-3); right:var(--space-3); width:40px; height:40px; border-radius:var(--radius-pill); border:0; background:rgba(38,54,74,.85); color:var(--moonlight); display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:6; }
+  .fn-menu-btn .fn-icon { width:18px; height:18px; }
+
+  .fn-tile { background:var(--surface); border-radius:var(--radius-card); padding:var(--space-4); }
+  .fn-meta { font-size:13px; line-height:18px; color:var(--ink-secondary); }
+  .fn-desc { font-size:15px; line-height:22px; color:var(--ink-body); margin:var(--space-1) 0 var(--space-3); }
+  .fn-dots { display:inline-flex; gap:6px; align-items:center; }
+  .fn-dot { width:8px; height:8px; border-radius:50%; background:var(--dot-inactive); }
+  .fn-dots--moderate .fn-dot--on { background:var(--clementine); }
+  .fn-dots--recovery .fn-dot--on { background:var(--lavender); }
+  .fn-dots--day24 .fn-dot--on { background:var(--brass); }
+
+  .fn-toast { display:flex; gap:var(--space-3); align-items:center; background:var(--surface); border-radius:var(--radius-tile); padding:var(--space-3) var(--space-4); color:var(--ink); font-size:15px; }
+  .fn-toast .fn-icon { width:20px; height:20px; color:var(--moonlight); }
+
+  .fn-menu { width:260px; background:var(--surface); border-radius:var(--radius-card); box-shadow:var(--menu-shadow); overflow:hidden; }
+  .fn-menu__head { display:flex; justify-content:space-between; align-items:center; padding:var(--space-3) var(--space-4) var(--space-2); font-size:13px; color:var(--ink-secondary); }
+  .fn-menu__item { display:flex; align-items:center; gap:var(--space-3); padding:var(--space-3) var(--space-4); font:inherit; font-size:15px; color:var(--ink); border:0; border-top:1px solid var(--window-locked-frame); background:none; width:100%; text-align:left; cursor:pointer; }
+  .fn-menu__item .fn-icon { width:18px; height:18px; color:var(--ink-secondary); }
+  .fn-menu__text { padding:0 var(--space-4) var(--space-3) 46px; font-size:13px; line-height:18px; color:var(--ink-body); }
+  .fn-toggle { margin-left:auto; display:inline-flex; background:var(--sky); border-radius:var(--radius-pill); padding:2px; }
+  .fn-toggle button { font:inherit; font-size:12px; font-weight:700; border:0; background:none; padding:3px 10px; border-radius:var(--radius-pill); color:var(--ink-secondary); cursor:pointer; }
+  .fn-toggle button[aria-pressed="true"] { background:var(--moonlight); color:var(--on-moonlight); }
+
+  .fn-notice { border-radius:var(--radius-tile); padding:var(--space-4); }
+  .fn-notice--error { background:var(--surface-error); border:1.5px solid var(--error); }
+  .fn-notice--error .fn-notice__title { color:var(--error); }
+  .fn-notice__title { display:flex; gap:var(--space-2); align-items:center; font-size:16px; font-weight:800; }
+  .fn-notice__body { font-size:15px; line-height:22px; color:var(--ink-body); margin:var(--space-1) 0 0; }
+
+  /* ===== Page + prototype frame ===== */
+  * { box-sizing:border-box; }
+  html, body { margin:0; height:100%; }
+  body { font-family:var(--font-sans); -webkit-font-smoothing:antialiased; background:var(--sky); color:var(--ink);
+    display:flex; align-items:stretch; height:100vh; height:100dvh; }
+  .controls { width:280px; flex:none; overflow-y:auto; border-width:0 1px 0 0 !important; background:#fffbe6; color:#222; border:1px dashed #b59f3b; padding:12px 14px; font:13px system-ui, sans-serif; color-scheme:light; }
+  .controls summary { font-weight:600; cursor:pointer; }
+  .controls h3 { font-size:12px; text-transform:uppercase; letter-spacing:.05em; margin:14px 0 6px; color:#6b5d1e; }
+  .controls .row { display:flex; flex-wrap:wrap; gap:4px; }
+  .controls button { font-size:12px; padding:4px 6px; border:1px solid #b59f3b; background:#fff; color:#222; cursor:pointer; }
+  .controls input[type=date] { font:inherit; padding:3px; width:100%; margin-bottom:6px; }
+  .controls p { margin:6px 0; color:#555; }
+  /* The app fills the whole window (no phone frame); only the controls panel sits beside it. */
+  .stage { flex:1; min-width:0; min-height:0; display:flex; overflow:hidden; background:#0f151c; }
+  .phone { flex:1; min-width:0; background:var(--sky); overflow:hidden; position:relative; display:flex; flex-direction:column; }
+  /* Device preset: the app at a fixed size, centred, scaled down (--ds) when the window is smaller than the device */
+  .stage.framed { align-items:center; justify-content:center; }
+  .stage.framed .phone { flex:none; width:var(--dw); height:var(--dh); border:2px solid #3a4756; border-radius:24px; transform:scale(var(--ds,1)); }
+  .controls button[aria-pressed="true"] { background:#6b5d1e; border-color:#6b5d1e; color:#fff; }
+  .controls:not([open]) { width:auto; }
+  @media (max-width:760px) {
+    body { flex-direction:column; }
+    .controls { width:auto; border-width:0 0 1px 0 !important; padding:8px 12px; max-height:50dvh; }
+  }
+  /* Reading screens stay a readable column on wide windows */
+  .card-top, .track, .card-cta { width:100%; max-width:520px; margin-left:auto; margin-right:auto; }
+  .screen { flex:1; display:flex; flex-direction:column; min-height:0; position:relative; }
+  .scroll { flex:1; overflow-y:auto; padding:var(--space-4) max(var(--space-4), calc(50% - 260px)); }
+
+  /* ===== Calendar scene ===== */
+  .cal { flex:1; }
+  /* --s = house scale, set by fitHouse() so the house fills the space between the menu button and the snow bank */
+  .house { position:absolute; z-index:2; left:50%; transform:translateX(-50%) scale(var(--s,1)); transform-origin:50% 100%; bottom:100px;
+    width:var(--hw, 292px); height:var(--hhu, 481px); display:flex; flex-direction:column; }
+  /* The house stretches to the free space (set by fitHouse); the roof keeps its height, the windows take whatever shape fits. */
+  .house svg { display:block; flex:none; width:100%; height:113px; }
+  .house .fn-house-wall { flex:1; min-height:0; grid-template-rows:repeat(6,1fr); justify-items:stretch; gap:12px 18px; padding:14px 14px 44px; }
+  .house .fn-window { width:100%; height:100%; }
+  /* Neighbours run from behind the house (10px overlap) out past the screen edge (cut off by 24px). The house is 292px wide before scaling. */
+  /* Background street: up to 3 houses per side (positioned by fitHouse), then a row of fir trees out to the edge */
+  .nb { position:absolute; bottom:100px; display:flex; flex-direction:column; z-index:1; }
+  .nb.far { z-index:0; }
+  .nb-trees { position:absolute; bottom:100px; z-index:0; }
+
+  .nb svg { display:block; width:100%; height:calc(40px * var(--s,1)); }
+  .nb.nb-trees svg { height:100%; }
+  .nb-body { flex:1; display:grid; grid-template-columns:repeat(auto-fill, calc(20px * var(--s,1))); grid-auto-rows:calc(26px * var(--s,1));
+    column-gap:calc(14px * var(--s,1)); row-gap:calc(26px * var(--s,1)); justify-content:center; align-content:start; padding-top:calc(18px * var(--s,1)); overflow:hidden; }
+  .nb-win { border-radius:3px; background:var(--neighbour-window); }
+  .snowbank { height:112px; padding:24px 20px 0; z-index:3; }
+  .snowbank .t1 { font-size:16px; line-height:20px; font-weight:800; }
+  .snowbank .t2 { font-size:13px; line-height:18px; font-weight:500; margin-top:4px; }
+  .snowlayer { position:absolute; inset:0; pointer-events:none; }
+  .menu-wrap { position:absolute; top:60px; right:12px; z-index:7; }
+  .pre-note { position:absolute; z-index:5; left:50%; top:45%; transform:translate(-50%,-50%); width:min(300px, 80%); text-align:center;
+    background:var(--surface); border-radius:var(--radius-card); padding:var(--space-5) var(--space-4); box-shadow:var(--menu-shadow); }
+  .pre-days { font-size:56px; line-height:56px; font-weight:800; color:var(--moonlight); }
+  .pre-title { font-size:16px; line-height:20px; font-weight:800; margin:8px 0 4px; }
+  .storage-note { position:absolute; top:12px; left:12px; right:64px; z-index:6; display:flex; gap:8px; align-items:center; font-size:12px; line-height:16px; color:var(--ink-body); border:1px solid var(--window-missed-frame); border-radius:var(--radius-tile); padding:6px 10px; background:rgba(28,39,51,.9); }
+
+  /* ===== Mode choice / intro ===== */
+  .ic { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex:none; }
+  .ic .fn-icon { width:20px; height:20px; }
+  .tile-head { display:flex; gap:12px; align-items:center; }
+  .tile-name { font-size:18px; font-weight:800; line-height:22px; }
+  .tile-line { font-size:15px; line-height:22px; color:var(--ink-body); margin:10px 0 14px; }
+  .screen-title { font-size:22px; line-height:28px; font-weight:800; color:var(--moonlight); margin:0; }
+  /* Mode choice and day-24 intro: back link at the top, the rest centred vertically in the free space */
+  .scroll.centred { display:flex; flex-direction:column; }
+  .scroll.centred > .fn-link { align-self:flex-start; }
+  /* The tiles take all the free height; their Santa image area absorbs it. Text size stays fixed. */
+  /* Tiles are as tall as their square art + text; fitModes() sizes the art (--art) so the group fills the height, then it's centred. */
+  .centred-body { flex:1; display:flex; flex-direction:column; justify-content:center; padding-top:24px; min-height:0; }
+  .tiles { display:grid; align-items:start; gap:clamp(12px, 2cqw, 24px); margin-top:16px; }
+  .mode-tile { display:flex; flex-direction:column; padding:clamp(16px, 2.4cqw, 28px); }
+  .mode-tile .ic { width:clamp(36px, 4cqw, 52px); height:clamp(36px, 4cqw, 52px); }
+  .mode-tile .ic .fn-icon { width:45%; height:45%; }
+  /* The free space is a box; the art inside is always square (one illustration per mode), as large as fits, centred. */
+  .mode-img { height:var(--art, 0px); margin-bottom:clamp(12px, 1.8cqw, 20px); display:flex; justify-content:center; }
+  .mode-img.none { display:none; }
+  .mode-art { width:var(--art, 0px); height:var(--art, 0px); border-radius:var(--radius-tile); display:flex; align-items:center; justify-content:center; }
+  .mode-art img { display:block; width:100%; height:100%; }
+  .mode-art span { font-size:12px; font-weight:500; opacity:.7; border:1.5px dashed currentColor; border-radius:var(--radius-tile); padding:6px 12px; }
+  /* v2: the window opens */
+  .shutters { grid-template-columns:1fr 1fr !important; gap:10px; padding:10px; background:var(--facade); border:2px solid var(--window-missed-frame); border-radius:16px 16px 8px 8px; }
+  .pane { position:relative; perspective:1400px; font:inherit; color:var(--ink); text-align:left; border:0; background:var(--sky); border-radius:8px; cursor:pointer; padding:clamp(12px, 2cqw, 24px); }
+  .pane:hover { background:#202d3b; }
+  .pane:focus-visible { outline:2px solid var(--moonlight); outline-offset:2px; }
+  .pane .answer { font-size:20px; line-height:24px; font-weight:800; }
+  .pane .fn-meta { margin-top:4px; }
+  .pane-routine { display:flex; align-items:center; gap:6px; margin-top:8px; font-size:15px; color:var(--ink-body); }
+  .pane-routine .fn-icon { width:16px; height:16px; }
+  .leaf { position:absolute; inset:-1px; border-radius:8px; background:var(--window-missed); border:2px solid var(--window-missed-frame); backface-visibility:hidden; pointer-events:none;
+    display:flex; align-items:center; justify-content:center; animation:leaf-l .75s .3s cubic-bezier(.5,0,.3,1) forwards; }
+  .leaf i { font-style:normal; font-size:28px; font-weight:800; color:var(--moonlight); }
+  .leaf--l { transform-origin:0 50%; } .leaf--r { transform-origin:100% 50%; animation-name:leaf-r; }
+  @keyframes leaf-l { to { transform:rotateY(-105deg); } }
+  @keyframes leaf-r { to { transform:rotateY(105deg); } }
+  .reduced .leaf { display:none; }
+  /* v3: the switch */
+  /* Segmented control: one bordered track, two labels; the picked side fills with its mode colour. */
+  .switch { position:relative; display:grid; grid-template-columns:1fr 1fr; background:var(--sky); border:1.5px solid var(--window-missed-frame); border-radius:var(--radius-pill); padding:4px; }
+  .switch button { position:relative; z-index:1; font:inherit; font-size:15px; line-height:18px; font-weight:700; background:transparent; border:0; color:var(--ink);
+    padding:12px 10px; min-height:52px; border-radius:var(--radius-pill); display:flex; gap:6px; align-items:center; justify-content:center; text-align:center; cursor:pointer;
+    transition:color .25s, background-color .15s; }
+  .switch button .fn-icon { width:18px; height:18px; }
+  .switch [data-mode="moderate"] .fn-icon { color:var(--clementine); }
+  .switch [data-mode="recovery"] .fn-icon { color:var(--lavender); }
+  .switch button:hover { background:var(--surface); }
+  .switch button:focus-visible { outline:2px solid var(--moonlight); outline-offset:2px; }
+  .switch .thumb { position:absolute; top:4px; bottom:4px; left:4px; width:calc(50% - 4px); border-radius:var(--radius-pill); opacity:0; transition:transform .25s ease, background .25s, opacity .2s; }
+  .switch[data-pick="moderate"] .thumb { opacity:1; background:var(--clementine); }
+  .switch[data-pick="recovery"] .thumb { opacity:1; background:var(--lavender); transform:translateX(100%); }
+  .switch[data-pick="moderate"] [data-mode="moderate"], .switch[data-pick="moderate"] [data-mode="moderate"] .fn-icon { color:var(--on-clementine); background:transparent; }
+  .switch[data-pick="recovery"] [data-mode="recovery"], .switch[data-pick="recovery"] [data-mode="recovery"] .fn-icon { color:var(--on-lavender); background:transparent; }
+  .reduced .switch .thumb, .reduced .switch button { transition:none; }
+  .pick-info { min-height:48px; margin:14px 0 12px; }
+  .pick-info .pane-routine { margin-top:0; font-size:16px; }
+  .is-hidden { visibility:hidden; }
+  .img-area--neutral { background:#dde3ea; color:var(--sky); }
+  .mode-art { transition:background-color .25s; }
+  .phone { container-type:size; }
+  /* Small phones (≤ 380 × 700, e.g. 360×640, iPhone SE): no illustration on the mode tiles, tiles size to their content */
+  @container (max-width:380px) and (max-height:700px) {
+    .mode-img { display:none; }
+  }
+  /* Wide app (desktop, tablet landscape): tiles side by side in a wider column */
+  @container (min-width:720px) {
+    .scroll.modes { padding-left:max(var(--space-4), calc(50% - 400px)); padding-right:max(var(--space-4), calc(50% - 400px)); }
+    .modes .tiles { grid-template-columns:1fr 1fr; }
+  }
+  .health { display:flex; gap:8px; align-items:flex-start; margin-top:16px; font-size:12px; line-height:16px; color:var(--ink-muted); }
+  .health .fn-icon { width:16px; height:16px; }
+
+  /* ===== Exercise cards ===== */
+  .card-top { display:flex; justify-content:space-between; align-items:center; padding:var(--space-3) var(--space-4); }
+  .track { flex:1; display:flex; overflow-x:auto; overflow-y:hidden; min-height:0; scroll-snap-type:x mandatory; scrollbar-width:none; overscroll-behavior-x:contain; }
+  .track::-webkit-scrollbar { display:none; }
+  .track:focus-visible { outline:2px solid var(--moonlight); outline-offset:-2px; }
+  .card { flex:0 0 100%; scroll-snap-align:start; overflow-y:auto; padding:0 var(--space-4) var(--space-4); }
+  .img-area { border-radius:var(--radius-card); padding:10px; display:grid; gap:8px; grid-template-columns:1fr 1fr; margin-bottom:var(--space-4); }
+  .img-area--moderate { background:var(--clementine-tint); color:var(--santa-berry,#6e2a27); }
+  .img-area--recovery { background:var(--lavender-tint); color:var(--on-lavender); }
+  .img-area--day24 { background:#efe8d8; color:var(--brass-deep); }
+  .img-slot { aspect-ratio:1/0.85; border:1.5px dashed currentColor; opacity:.55; border-radius:var(--radius-tile); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:500; }
+  .img-slot--art { border:0; opacity:1; padding:0; overflow:hidden; background:rgba(255,255,255,.35); }
+  .img-slot--art img { display:block; width:100%; height:100%; object-fit:contain; }
+  .img-area.n3 .img-slot:first-child { grid-column:1 / -1; aspect-ratio:2/0.85; }
+  .ex-name { font-size:22px; line-height:28px; font-weight:800; letter-spacing:-.01em; margin:0; }
+  .story { font-size:15px; line-height:22px; color:var(--ink-secondary); font-style:italic; margin:var(--space-1) 0 0; }
+  .card-foot { display:flex; justify-content:space-between; align-items:center; margin-top:var(--space-2); }
+  .amt { font-size:15px; line-height:22px; font-weight:700; }
+  .opts { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:var(--space-3); }
+  .opts > div { background:var(--surface); border-radius:var(--radius-tile); padding:10px 12px; font-size:13px; line-height:18px; color:var(--ink-body); }
+  .opts strong { display:block; font-size:13px; font-weight:700; color:var(--brass); margin-bottom:2px; }
+  .card-cta { padding:var(--space-3) var(--space-4) var(--space-4); display:flex; gap:10px; }
+  .card-back { flex:none; width:48px; padding:0; }
+  .card-back:disabled { opacity:.35; cursor:default; }
+
+  /* ===== Toast ===== */
+  .toast-wrap { position:absolute; left:max(16px, calc(50% - 260px)); right:max(16px, calc(50% - 260px)); bottom:24px; z-index:20; opacity:0; transform:translateY(8px); transition:opacity .2s, transform .2s; pointer-events:none; }
+  .toast-wrap.show { opacity:1; transform:none; }
+
+  /* ===== Done moment (days 1–23) ===== */
+  .moment { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:24px; }
+  .moment .fade { animation:fadein 1s ease-out both; position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; }
+  .ring { width:104px; height:104px; border-radius:50%; background:var(--sage-deep); border:3px solid var(--sage); color:var(--sage); display:flex; align-items:center; justify-content:center; }
+  .ring .fn-icon { width:48px; height:48px; }
+  .c-title { font-size:28px; line-height:32px; font-weight:800; letter-spacing:-.01em; margin:24px 0 0; }
+  .pbar { width:180px; height:6px; border-radius:var(--radius-pill); background:var(--track); margin-top:16px; overflow:hidden; }
+  .pbar span { display:block; height:100%; background:var(--sage); border-radius:var(--radius-pill); }
+  .bottom-cta { position:absolute; left:max(24px, calc(50% - 236px)); right:max(24px, calc(50% - 236px)); bottom:24px; z-index:4; }
+  .front-snow { position:absolute; inset:0; pointer-events:none; z-index:3; }
+  @keyframes fadein { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+
+  /* ===== Day 24: sleigh across the moon ===== */
+  .sleigh-scene { flex:1; }
+  .moon { position:absolute; left:50%; top:90px; width:200px; height:200px; margin-left:-100px; border-radius:50%; background:var(--moonlight); box-shadow:0 0 60px 10px rgba(211,220,230,.18); }
+  .sleigh { position:absolute; top:150px; left:calc(50% - 85px); width:170px; animation:fly 3s linear both; z-index:2; }
+  @keyframes fly { from { left:-190px; transform:translateY(20px); } to { left:100%; transform:translateY(-30px); } }
+  .sleigh-msg { position:absolute; left:24px; right:24px; top:330px; text-align:center; animation:fadein .8s ease-out 2.6s both; z-index:2; }
+  .sleigh-msg p { color:var(--ink-body); font-size:15px; line-height:22px; }
+
+  /* ===== All-24 finale ===== */
+  .finale .house { bottom:auto; top:70px; transform-origin:50% 0; animation:shrink .9s ease-in-out 2.4s forwards; }
+  /* Shrink via the separate scale/translate properties so it composes with the fitted scale (--s) in transform */
+  @keyframes shrink { to { scale:.56; translate:0 -6%; } }
+  .finale .fn-window { animation:lit .35s ease-out forwards; animation-delay:calc(var(--i) * 80ms); }
+  .finale .fn-window--done::after { display:none; }
+  @keyframes lit { to { background:var(--candle); border-color:var(--candle); color:var(--sky); box-shadow:0 0 10px 2px rgba(230,211,166,.35); } }
+  .finale .fn-window[data-day="24"] { animation-name:lit24; }
+  @keyframes lit24 { to { background:var(--brass); border-color:var(--brass); color:var(--sky); box-shadow:0 0 14px 4px rgba(201,178,124,.45); } }
+  .finale .nb { animation:fadeout .6s 2.4s forwards; }
+  @keyframes fadeout { to { opacity:0; } }
+  /* ===== Sleigh calendar (decided 15 Nov) ===== */
+  .sl-svg { position:absolute; left:0; top:56px; width:100%; height:calc(100% - 152px); z-index:2; overflow:visible; }
+  .gift { cursor:pointer; outline:none; }
+  .gift:focus-visible .box { stroke:var(--moonlight); stroke-width:3; }
+  .gift:hover .box { filter:brightness(1.08); }
+  .gift-today .glow { animation:giftpulse 2.4s ease-in-out infinite; }
+  @keyframes giftpulse { 50% { opacity:.34; } }
+  .reduced .gift-today .glow { animation:none; }
+  .sl-ride { transform-box:fill-box; transform-origin:50% 100%; }
+  .finale .sl-ride { animation:takeoff 2.6s cubic-bezier(.5,0,.75,0) 1.4s forwards; }
+  @keyframes takeoff { 20% { transform:translate(0,-6px) rotate(-2deg); } 100% { transform:translate(420px,-560px) rotate(-14deg); } }
+  .end.finale .sl-ride, .reduced.finale .sl-ride { animation:none; }
+  .finale .sl-msg { position:absolute; left:24px; right:24px; top:96px; text-align:center; z-index:4; animation:fadein .8s ease-out 3.4s both; }
+  .finale .sl-msg p { color:var(--ink-body); font-size:15px; line-height:22px; margin:8px 0 0; }
+  .end.finale .sl-msg, .reduced.finale .sl-msg { animation:none; opacity:1; }
+  .ride { cursor:pointer; outline:none; }
+  .ride .ride-glow { animation:ridepulse 2s ease-in-out infinite; }
+  @keyframes ridepulse { 50% { opacity:.25; } }
+  .ride:focus-visible .ride-glow { opacity:1; stroke-width:5; }
+  .reduced .ride .ride-glow { animation:none; }
+  .snowbank--ride { padding-top:18px; }
+  .ride-btn { margin-top:10px; background:var(--brass); color:var(--brass-deep); white-space:nowrap; box-shadow:0 2px 0 rgba(28,39,51,.25); }
+  .ride-santa { cursor:pointer; }
+  .gift-ready { cursor:grab; touch-action:none; }
+  .gift-ready:active { cursor:grabbing; }
+  .gift-ready .glow { animation:giftpulse 1.6s ease-in-out infinite; }
+  .throw-hint { animation:hintbob 1.4s ease-in-out infinite; pointer-events:none; }
+  @keyframes hintbob { 50% { transform:translateY(-6px); } }
+  .reduced .throw-hint, .reduced .gift-ready .glow { animation:none; }
+  .shelf { display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; padding:4px var(--space-4) var(--space-3) var(--space-4); }
+  .shelf button { font:inherit; font-size:12px; font-weight:700; color:var(--ink-secondary); background:var(--sky); border:1.5px dashed var(--window-locked-frame); border-radius:10px; padding:8px 4px 6px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:2px; }
+  .shelf button b { font-size:15px; color:var(--ink); }
+  .finale-msg { position:absolute; left:24px; right:24px; top:var(--msg-top, 420px); text-align:center; z-index:3; animation:fadein .8s ease-out 3.1s both; }
+  .finale-msg p { color:var(--ink-body); font-size:15px; line-height:22px; margin:8px 0 0; }
+
+  /* Skip (tap) and reduced motion: jump to end states */
+  .reduced .front-snow { display:none; }
+  .end .fn-flake, .reduced .fn-flake { animation:none !important; top:var(--y,0px); }
+  .end .fn-smoke, .reduced .fn-smoke { animation:none; }
+  .end .fade, .reduced .fade, .end .sleigh-msg, .reduced .sleigh-msg, .end .finale-msg, .reduced .finale-msg { animation:none; opacity:1; transform:none; }
+  .end .sleigh, .reduced .sleigh { animation:none; transform:translateY(-6px); }
+  .end.finale .house, .reduced.finale .house { animation:none; scale:.56; translate:0 -6%; }
+  .end.finale .nb, .reduced.finale .nb { animation:none; opacity:0; }
+  .end.finale .fn-window, .reduced.finale .fn-window { animation:none; background:var(--candle); border-color:var(--candle); color:var(--sky); }
+  .end.finale .fn-window[data-day="24"], .reduced.finale .fn-window[data-day="24"] { background:var(--brass); border-color:var(--brass); }
+</style>
+</head>
+<body>
+
+<details class="controls" id="controls" open>
+  <summary>Prototype controls</summary>
+  <p>Not part of the site. Stands in for the localhost-only date override and sets up states quickly.</p>
+  <h3>Device size</h3>
+  <div class="row" id="devices"></div>
+  <h3>Mode choice</h3>
+  <div class="row" id="modeStyles"></div>
+  <h3>Simulated date</h3>
+  <input type="date" id="dateInput" aria-label="Simulated date">
+  <div class="row" id="datePresets"></div>
+  <p>Now: <b id="nowLabel"></b></p>
+  <h3>Progress (saved in this browser)</h3>
+  <div class="row">
+    <button data-ctl="done-1-23">Mark 1–23 done</button>
+    <button data-ctl="done-past">Mark past days done</button>
+    <button data-ctl="reset">Reset progress</button>
+  </div>
+  <h3>Moments</h3>
+  <label><input type="checkbox" id="reducedMotion"> Simulate reduced motion</label>
+  <div class="row" style="margin-top:6px">
+    <button data-ctl="moment">Load today’s present</button>
+    <button data-ctl="sleigh">Day 24 sleigh</button>
+    <button data-ctl="finale">All-24 finale</button>
+    <button data-ctl="error">Content error</button>
+  </div>
+  <h3>Try</h3>
+  <p>Tap a locked or missed window · menu (…) for DE/EN · pick a mode, swipe or ←/→ · finish a day · door 24 with and without all days done · tap during an animation to skip it.</p>
+</details>
+
+<div class="stage" id="stage">
+<main class="phone" id="phone">
+  <div class="screen" id="screen"></div>
+  <div class="toast-wrap" id="toast" role="status" aria-live="polite"></div>
+</main>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---------- Icons (Lucide-style stand-ins, as in the design system previews) ----------
+  const svg = (inner, sw) => `<svg class="fn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw || 2}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
+  const I = {
+    check: svg('<path d="M20 6 9 17l-5-5"/>', 3),
+    star: svg('<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>', 2.2),
+    flame: svg('<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>'),
+    leaf: svg('<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>'),
+    back: svg('<path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>'),
+    next: svg('<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>'),
+    info: svg('<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>'),
+    lock: svg('<rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>'),
+    ellipsis: svg('<circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>'),
+    x: svg('<path d="M18 6 6 18"/><path d="m6 6 12 12"/>'),
+    globe: svg('<circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/>'),
+    heart: svg('<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>'),
+    alert: svg('<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>'),
+    snowflake: svg('<path d="M2 12h20M12 2v20M20 16l-4-4 4-4M4 8l4 4-4 4M16 4l-4 4-4-4M8 20l4-4 4 4"/>'),
+    refresh: svg('<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>')
+  };
+
+  // ---------- Storage (fails soft) ----------
+  let storageOk = true;
+  try { localStorage.setItem('proto-test', '1'); localStorage.removeItem('proto-test'); } catch (e) { storageOk = false; }
+  const store = {
+    get(k, fb) { try { const v = localStorage.getItem('proto-' + k); return v === null ? fb : JSON.parse(v); } catch (e) { return fb; } },
+    set(k, v) { try { localStorage.setItem('proto-' + k, JSON.stringify(v)); } catch (e) { /* ignore */ } }
+  };
+
+  // ---------- Strings ----------
+  const T = {
+    en: {
+      tagline: 'Help the elves load the sleigh',
+      swipeHint: 'Swipe up', rideHint: 'Tap to ride', status24Open: 'Santa is here', rideLabel: 'Day 24: ride the sleigh with Santa', statusReady: (d) => `Present ${d} is ready · swipe it onto the sleigh`, readyLabel: (d) => `Present ${d}, ready. Swipe up, tap or press Enter to throw it onto the sleigh`,
+      workshop: 'Still in the workshop', workshopEmpty: 'Nothing left in the workshop. Every present is out.',
+      shelfDay: (d) => d,
+      statusPre: 'Starts on 1 December · then the first present is waiting',
+      preTitle: 'The calendar starts on 1 December',
+      preCount: (d) => d <= 1 ? 'Window 1 opens tomorrow' : `Window 1 opens in ${d} days`,
+      statusOpen: (d, n) => `Present ${d} is waiting · ${n} loaded`,
+      statusDone: (d) => `Present ${d} loaded · see you tomorrow`,
+      status24Done: 'Day 24 done · Merry Christmas',
+      statusAfter: (n) => `Merry Christmas · ${n} of 23 presents loaded`,
+      state: { locked: 'still in the workshop', missed: 'in the snow, not loaded yet', today: 'today, waiting', done: 'loaded' },
+      day: (d) => `Day ${d}`, opensOn: (d) => `Opens on ${d}`,
+      menu: 'Menu', close: 'Close', language: 'Language', about: 'What is this?', health: 'Health note',
+      aboutText: 'The elves train all December and load Santa’s sleigh. Every day one present waits for you: open it, do a 10-minute bodyweight workout (Moderate or Recovery), and the present goes onto the sleigh. On the 24th Santa shows up for his once-a-year workout. Progress stays on this device.',
+      healthText: 'These exercises are general suggestions, not medical advice. Stop if anything hurts.',
+      storageNote: 'Progress can’t be saved in this browser.',
+      calendar: 'Calendar', pickMode: 'Pick your mode',
+      moderate: 'Moderate', recovery: 'Recovery',
+      moderateLine: 'Bodyweight strength and cardio. Warms up the whole body.',
+      recoveryLine: 'Gentle stretches and slow breathing.',
+      meta: (n) => `${n} exercises · 10 min`, start: 'Start',
+      doneBadge: 'Done · repeat any time',
+      feelQ: 'How does your body feel today?', feel: { moderate: 'Ready to move', recovery: 'Rather stretch out' },
+      pickHint: 'Pick one to see today’s routine', modeMeta: (m, n) => `${m} · ${n} exercises · 10 min`,
+      d24Title: 'Santa’s sleigh run', d24Badge: 'Sleigh run',
+      d24Line: 'Santa’s big night in 5 stops. Every stop has an easier and a harder option, so it works for everyone.',
+      d24Meta: '5 stops · 12–15 min', replay: 'Replay celebration',
+      next: 'Next', finish: 'Done for today', prevCard: 'Previous exercise', easier: 'Easier', harder: 'Harder',
+      of: (i, n) => `${i} / ${n}`, img: (i, n) => `Santa ${i}/${n}`,
+      momentTitle: (d) => `Day ${d} done`, momentMeta: (n) => `${n} of 24 · nice rhythm`,
+      backToCal: 'Back to calendar',
+      sleighTitle: 'Sleigh run complete', sleighMsg: 'Thanks for showing up today. Merry Christmas!',
+      finaleTitle: '24 of 24', finaleMsg: 'You showed up every single day. That’s the whole trick.',
+      tapSkip: 'Tap to skip',
+      errTitle: 'Today’s workout didn’t load', errBody: 'Something is wrong with the content. Try again – if it keeps happening, check back a little later.', retry: 'Try again'
+    },
+    de: {
+      tagline: 'Hilf den Elfen, den Schlitten zu beladen',
+      swipeHint: 'Nach oben wischen', rideHint: 'Tippen zum Losfahren', status24Open: 'Der Weihnachtsmann ist da', rideLabel: 'Tag 24: mit dem Weihnachtsmann Schlitten fahren', statusReady: (d) => `Geschenk ${d} ist bereit · wirf es auf den Schlitten`, readyLabel: (d) => `Geschenk ${d}, bereit. Nach oben wischen, tippen oder Enter drücken, um es auf den Schlitten zu werfen`,
+      workshop: 'Noch in der Werkstatt', workshopEmpty: 'Die Werkstatt ist leer. Alle Geschenke sind draußen.',
+      shelfDay: (d) => d,
+      statusPre: 'Startet am 1. Dezember · dann wartet das erste Geschenk',
+      preTitle: 'Der Kalender startet am 1. Dezember',
+      preCount: (d) => d <= 1 ? 'Fenster 1 öffnet morgen' : `Fenster 1 öffnet in ${d} Tagen`,
+      statusOpen: (d, n) => `Geschenk ${d} wartet · ${n} geladen`,
+      statusDone: (d) => `Geschenk ${d} ist geladen · bis morgen`,
+      status24Done: 'Tag 24 geschafft · Frohe Weihnachten',
+      statusAfter: (n) => `Frohe Weihnachten · ${n} von 23 Geschenken geladen`,
+      state: { locked: 'noch in der Werkstatt', missed: 'liegt im Schnee, noch nicht geladen', today: 'heute, wartet', done: 'geladen' },
+      day: (d) => `Tag ${d}`, opensOn: (d) => `Öffnet am ${d}`,
+      menu: 'Menü', close: 'Schließen', language: 'Sprache', about: 'Worum geht’s?', health: 'Gesundheitshinweis',
+      aboutText: 'Die Elfen trainieren den ganzen Dezember und beladen den Schlitten vom Weihnachtsmann. Jeden Tag wartet ein Geschenk: öffnen, 10 Minuten mit dem eigenen Körpergewicht trainieren (Moderat oder Recovery), und das Geschenk kommt auf den Schlitten. Am 24. kommt der Weihnachtsmann selbst zu seinem einzigen Workout im Jahr. Dein Fortschritt bleibt auf diesem Gerät.',
+      healthText: 'Die Übungen sind allgemeine Vorschläge, keine medizinische Beratung. Hör auf, wenn etwas weh tut.',
+      storageNote: 'Dein Fortschritt kann in diesem Browser nicht gespeichert werden.',
+      calendar: 'Kalender', pickMode: 'Wähle deinen Modus',
+      moderate: 'Moderat', recovery: 'Recovery',
+      moderateLine: 'Kraft und Cardio mit Körpergewicht. Wärmt den ganzen Körper auf.',
+      recoveryLine: 'Sanftes Dehnen und ruhiges Atmen.',
+      meta: (n) => `${n} Übungen · 10 Min.`, start: 'Los geht’s',
+      doneBadge: 'Geschafft · jederzeit wiederholbar',
+      feelQ: 'Wie fühlt sich dein Körper heute an?', feel: { moderate: 'Bereit für Bewegung', recovery: 'Lieber dehnen' },
+      pickHint: 'Wähle eins, dann siehst du die Routine', modeMeta: (m, n) => `${m} · ${n} Übungen · 10 Min.`,
+      d24Title: 'Santas Schlittenfahrt', d24Badge: 'Schlittenfahrt',
+      d24Line: 'Santas große Nacht in 5 Stationen. Jede Station hat eine leichtere und eine schwerere Variante, damit alle mitmachen können.',
+      d24Meta: '5 Stationen · 12–15 Min.', replay: 'Feier nochmal ansehen',
+      next: 'Weiter', finish: 'Fertig für heute', prevCard: 'Vorherige Übung', easier: 'Leichter', harder: 'Schwerer',
+      of: (i, n) => `${i} / ${n}`, img: (i, n) => `Santa ${i}/${n}`,
+      momentTitle: (d) => `Tag ${d} geschafft`, momentMeta: (n) => `${n} von 24 · guter Rhythmus`,
+      backToCal: 'Zurück zum Kalender',
+      sleighTitle: 'Schlittenfahrt geschafft', sleighMsg: 'Schön, dass du heute dabei warst. Frohe Weihnachten!',
+      finaleTitle: '24 von 24', finaleMsg: 'Du warst jeden einzelnen Tag dabei. Das ist schon der ganze Trick.',
+      tapSkip: 'Tippen zum Überspringen',
+      errTitle: 'Das Workout konnte nicht geladen werden', errBody: 'Mit den Inhalten stimmt etwas nicht. Versuch es nochmal – wenn es wieder passiert, schau etwas später vorbei.', retry: 'Nochmal versuchen'
+    }
+  };
+
+  // ---------- Sample content (placeholder) ----------
+  const EX = {
+    'cat-cow':   { modes:['recovery'], amt:'60 s', name:{de:'Katze-Kuh',en:'Cat-cow'}, desc:{de:'Im Vierfüßlerstand den Rücken im Atemrhythmus abwechselnd rund machen und sinken lassen.',en:'On all fours, round then arch your back slowly with each breath.'} },
+    'child':     { modes:['recovery'], amt:'90 s', name:{de:'Kindhaltung',en:'Child’s pose'}, desc:{de:'Knie weit, Gesäß Richtung Fersen, Arme lang nach vorn. Ruhig atmen.',en:'Knees wide, sit back towards your heels, arms long in front. Breathe slowly.'} },
+    'hipflexor': { modes:['recovery'], amt:'2 × 45 s', name:{de:'Hüftbeuger-Dehnung',en:'Hip flexor stretch'}, desc:{de:'Im Halbkniestand die Hüfte sanft nach vorn schieben. Nach der Hälfte Seite wechseln.',en:'Half-kneeling, gently push your hips forward. Switch sides halfway.'} },
+    'hamstring': { modes:['recovery'], amt:'2 × 45 s', name:{de:'Beinrückseite dehnen',en:'Hamstring stretch'}, desc:{de:'Im Sitzen ein Bein lang, aus der Hüfte nach vorn neigen, bis du eine Dehnung spürst.',en:'Sit with one leg long and hinge forward from the hips until you feel a stretch.'} },
+    'thread':    { modes:['recovery'], amt:'2 × 45 s', name:{de:'Nadel einfädeln',en:'Thread the needle'}, desc:{de:'Im Vierfüßlerstand einen Arm unter dem anderen durchschieben und die Schulter ablegen.',en:'On all fours, slide one arm under the other and rest your shoulder down.'} },
+    'figure4':   { modes:['recovery'], amt:'2 × 45 s', name:{de:'Vierer-Dehnung',en:'Figure-four stretch'}, desc:{de:'In Rückenlage einen Knöchel aufs andere Knie legen und das Bein sanft heranziehen.',en:'Lying on your back, cross one ankle over the other knee and gently pull the leg in.'} },
+    'breath':    { modes:['recovery'], amt:'2 min', name:{de:'Box-Atmung',en:'Box breathing'}, desc:{de:'4 Sekunden ein, 4 halten, 4 aus, 4 halten. Wiederholen.',en:'Breathe in for 4, hold 4, out 4, hold 4. Repeat.'} },
+    'squat':     { modes:['moderate'], amt:'3 × 12', name:{de:'Kniebeuge',en:'Squat'}, desc:{de:'Füße hüftbreit, Gesäß nach hinten unten, dann wieder aufrichten. Ruhig weiteratmen.',en:'Feet hip-width, sit back like loading the sleigh, stand tall. Breathe steadily.'} },
+    'lunge':     { modes:['moderate'], amt:'3 × 16', name:{de:'Ausfallschritt rückwärts',en:'Reverse lunge'}, desc:{de:'Einen Schritt zurück, hinteres Knie Richtung Boden senken, zurück. Beine abwechseln.',en:'Step back, lower the back knee towards the floor, return. Alternate legs.'} },
+    'pushup':    { modes:['moderate'], amt:'3 × 8', name:{de:'Liegestütz (gern auf Knien)',en:'Push-up (knees are fine)'}, desc:{de:'Hände unter den Schultern, Brust absenken und wieder hochdrücken.',en:'Hands under shoulders, lower your chest and push back up.'} },
+    'plank':     { modes:['moderate'], amt:'3 × 30 s', name:{de:'Unterarmstütz',en:'Forearm plank'}, desc:{de:'Unterarme am Boden, Körper in einer Linie von Kopf bis Fersen. Weiteratmen.',en:'Forearms down, body in one line from head to heels. Keep breathing.'} },
+    'bridge':    { modes:['moderate'], amt:'3 × 12', name:{de:'Beckenheben',en:'Glute bridge'}, desc:{de:'Rückenlage, Füße aufgestellt, Becken heben und langsam senken.',en:'Lying on your back with feet down, lift your hips and lower slowly.'} },
+    'march':     { modes:['moderate'], amt:'2 × 60 s', name:{de:'Marschieren mit hohen Knien',en:'High-knee march'}, desc:{de:'Auf der Stelle marschieren, Knie hoch. Ohne Springen.',en:'March on the spot, lifting your knees high. No jumping.'} },
+    'superman':  { modes:['moderate'], amt:'3 × 10', name:{de:'Superman',en:'Superman'}, desc:{de:'In Bauchlage Arme und Beine leicht anheben, kurz halten, senken.',en:'Lying face down, lift arms and legs slightly, hold briefly, lower.'} }
+  };
+  const ROUTINE_NAMES = {
+    recovery: { en:['Slow start','Unwind','Loose shoulders','Easy hips','Soft reset','Deep breath'], de:['Sanfter Start','Runterkommen','Lockere Schultern','Leichte Hüften','Sanfter Neustart','Tief durchatmen'] },
+    moderate: { en:['Wake-up','Strong legs','Core day','Full body','Steady','Upper body'], de:['Wachmacher','Starke Beine','Core-Tag','Ganzkörper','Dranbleiben','Oberkörper'] }
+  };
+  const DAY24 = [
+    { name:{en:'Load the sleigh',de:'Den Schlitten beladen'}, story:{en:'The presents are piled up high. Time to lift them onto the sleigh.',de:'Die Geschenke stapeln sich. Ab damit auf den Schlitten.'}, move:{en:'Squats',de:'Kniebeugen'}, easier:{en:'Half squats, 2 × 10',de:'Halbe Kniebeugen, 2 × 10'}, harder:{en:'Slow squats, 3 × 15',de:'Langsame Kniebeugen, 3 × 15'} },
+    { name:{en:'Climb onto the roof',de:'Aufs Dach klettern'}, story:{en:'First stop. Up we go.',de:'Erste Station. Hoch geht’s.'}, move:{en:'Step-ups or lunges',de:'Step-ups oder Ausfallschritte'}, easier:{en:'Step-ups on a low step, 2 × 8 per leg',de:'Step-ups auf eine niedrige Stufe, 2 × 8 pro Bein'}, harder:{en:'Reverse lunges, 3 × 10 per leg',de:'Ausfallschritte rückwärts, 3 × 10 pro Bein'} },
+    { name:{en:'Squeeze down the chimney',de:'Durch den Schornstein'}, story:{en:'It’s a tight fit. Stay low and steady.',de:'Ganz schön eng. Tief und ruhig bleiben.'}, move:{en:'Low plank hold',de:'Tiefer Unterarmstütz'}, easier:{en:'Plank on knees, 3 × 20 s',de:'Stütz auf den Knien, 3 × 20 s'}, harder:{en:'Forearm plank, 3 × 40 s',de:'Unterarmstütz, 3 × 40 s'} },
+    { name:{en:'Deliver the presents',de:'Geschenke verteilen'}, story:{en:'One under the tree, one by the sofa, one in the far corner…',de:'Eins unter den Baum, eins neben das Sofa, eins in die Ecke…'}, move:{en:'Reaching side lunges',de:'Seitliche Ausfallschritte mit Greifen'}, easier:{en:'Small side steps with a reach, 2 × 8 per side',de:'Kleine Seitschritte mit Greifen, 2 × 8 pro Seite'}, harder:{en:'Deep side lunges with a reach, 3 × 10 per side',de:'Tiefe Seitausfallschritte mit Greifen, 3 × 10 pro Seite'} },
+    { name:{en:'Rest by the tree',de:'Ausruhen am Baum'}, story:{en:'All delivered. Sit by the lights for a moment.',de:'Alles verteilt. Kurz bei den Lichtern sitzen.'}, move:{en:'Stretch & breathing',de:'Dehnen & Atmen'}, easier:{en:'Child’s pose, then 2 min breathing',de:'Kindhaltung, dann 2 Min. atmen'}, harder:{en:'Child’s pose + figure-four, then 3 min breathing',de:'Kindhaltung + Vierer-Dehnung, dann 3 Min. atmen'} }
+  ];
+  function routineFor(day, mode) {
+    const ids = Object.keys(EX).filter((id) => EX[id].modes.includes(mode));
+    const list = [];
+    for (let i = 0; i < 5; i++) list.push(ids[(day + i * 2) % ids.length]);
+    list.forEach((id) => { if (!EX[id]) throw new Error('Unknown exercise id: ' + id); });
+    return list;
+  }
+  const routineName = (day, mode) => { const n = ROUTINE_NAMES[mode][state.lang]; return n[(day - 1) % n.length]; };
+  const imgCount = (seed) => 2 + (seed % 3);
+
+  // ---------- State ----------
+  const YEAR = 2026;
+  const browserLang = (navigator.language || 'en').toLowerCase().startsWith('de') ? 'de' : 'en';
+  const state = {
+    lang: store.get('lang', browserLang),
+    done: new Set(store.get('done', [])),
+    modes: store.get('modes', {}), justLoaded: null, pending: null,
+    simDate: new Date(YEAR, 11, 7, 9, 0),
+    view: { name: 'calendar' },
+    cardIndex: 0, menuOpen: false, menuSection: null, reducedMotion: false,
+    modeStyle: 'switch', pick: null, zoomFrom: null
+  };
+  const t = () => T[state.lang];
+  const saveDone = () => { store.set('done', [...state.done]); store.set('modes', state.modes); }; // loading order = order on the sleigh
+  const openDate = (n) => new Date(YEAR, 11, n, 0, 0, 0);
+  const todayDoor = () => { const d = state.simDate; return d.getFullYear() === YEAR && d.getMonth() === 11 && d.getDate() <= 24 ? d.getDate() : null; };
+  function winState(n) {
+    if (state.simDate < openDate(n)) return 'locked';
+    if (state.done.has(n)) return 'done';
+    return n === todayDoor() ? 'today' : 'missed';
+  }
+  const fmtDay = (n) => openDate(n).toLocaleDateString(state.lang === 'de' ? 'de-DE' : 'en-GB', { day: 'numeric', month: 'long' });
+  const prefersReduced = () => state.reducedMotion || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const motionCls = () => (prefersReduced() ? ' reduced' : '');
+
+  // ---------- Building blocks ----------
+  function flakes(n, opts) {
+    let f = '';
+    for (let i = 0; i < n; i++) {
+      const s = (opts.min + Math.random() * opts.range).toFixed(1);
+      f += `<div class="fn-flake" style="left:${(Math.random() * 100).toFixed(1)}%;width:${s}px;height:${s}px;opacity:${(opts.op + Math.random() * opts.opRange).toFixed(2)};--dx:${((Math.random() - .5) * 50).toFixed(0)}px;--y:${(Math.random() * 700).toFixed(0)}px;animation-duration:${(opts.dur + Math.random() * opts.durRange).toFixed(1)}s;animation-delay:-${(Math.random() * 14).toFixed(1)}s"></div>`;
+    }
+    return f;
+  }
+  // Background houses: gable shapes and their snow lines (viewBox 84 × 40).
+  const GABLES = {
+    stepped: ['M0 40V28h12V16h14V4h32v12h14v12h12v12Z', 'M1 28h11M13 16h13M27 4h30M58 16h13M72 28h11'],
+    curved:  ['M0 40Q0 24 18 19Q23 2 42 2Q61 2 66 19Q84 24 84 40Z', 'M20 17Q25 5 42 5Q59 5 64 17'],
+    pitched: ['M0 40L42 6L84 40Z', 'M3 38L42 8L81 38']
+  };
+  // Per side, from the calendar house outward: gable, width (× 60% of the calendar house), height (× its height), colour.
+  const STREET = {
+    l: [['stepped', 1, .87, 1], ['pitched', .85, .76, 2], ['curved', .95, .9, 1]],
+    r: [['curved', 1, .93, 2], ['stepped', .9, .8, 1], ['pitched', .85, .72, 2]]
+  };
+  function street(side) {
+    let out = '';
+    STREET[side].forEach(([gable, , , col], i) => {
+      let cells = '';
+      for (let k = 0; k < 160; k++) cells += `<div class="nb-win"${side === 'l' && i === 0 && k === 9 ? ' style="background:var(--neighbour-window-lit)"' : ''}></div>`;
+      out += `<div class="nb${i ? ' far' : ''}" data-side="${side}" data-i="${i}">
+        <svg viewBox="0 0 84 40" preserveAspectRatio="none" aria-hidden="true"><path d="${GABLES[gable][0]}" fill="var(--neighbour-${col})"/><path d="${GABLES[gable][1]}" fill="none" stroke="var(--snow-cap)" stroke-opacity=".5" stroke-width="4" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>
+        <div class="nb-body" style="background:var(--neighbour-${col})">${cells}</div></div>`;
+    });
+    // Fir trees: three sizes repeating every 90 units, drawn in the darkest neighbour colour.
+    out += `<div class="nb nb-trees" data-side="${side}"><svg aria-hidden="true"><defs><pattern id="firs-${side}" width="90" height="100" patternUnits="userSpaceOnUse">
+      <path d="M8 100L24 40L40 100Z M38 100L56 20L74 100Z M66 100L78 58L90 100Z" fill="var(--neighbour-1)"/>
+      <path d="M18 62L24 40L30 62M50 46L56 20L62 46M74 72L78 58L82 72" fill="none" stroke="var(--snow-cap)" stroke-opacity=".35" stroke-width="3" stroke-linecap="round"/></pattern></defs>
+      <rect width="100%" height="100%" fill="url(#firs-${side})"/></svg></div>`;
+    return out;
+  }
+
+  function houseHtml(finale) {
+    const s = t();
+    let w = '';
+    for (let n = 1; n <= 24; n++) {
+      const st = winState(n);
+      let cls = 'fn-window--' + st, inner = n;
+      if (n === 24) { cls = 'fn-window--24' + (st === 'done' ? ' is-done' : ''); inner = `${n}<span class="win-badge">${st === 'done' ? I.check : I.star}</span>`; }
+      else if (st === 'done') inner = `${n}<span class="win-badge">${I.check}</span>`;
+      w += `<button class="fn-window ${cls}" style="--i:${n - 1}" data-act="door" data-day="${n}" aria-label="${s.day(n)}, ${s.state[st]}"${finale ? ' tabindex="-1"' : ''}>${inner}</button>`;
+    }
+    return `<div class="house">
+      <svg viewBox="0 -36 248 96" preserveAspectRatio="none" aria-hidden="true">
+        <g class="fn-smoke" opacity=".35"><path d="M182 -6q-6-8 0-15q6-7 0-15" fill="none" stroke="var(--smoke)" stroke-width="3.5" stroke-linecap="round"/></g>
+        <rect x="170" y="-2" width="24" height="40" fill="var(--facade)"/>
+        <rect x="167" y="-6" width="30" height="6" rx="3" fill="var(--snow-cap)"/>
+        <polygon points="0,60 124,0 248,60" fill="var(--roof)"/>
+        <polyline points="5,56 124,4 243,56" fill="none" stroke="var(--snow-cap)" stroke-width="6" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+      </svg>
+      <div class="fn-house-wall">${w}</div></div>`;
+  }
+
+  // ---------- Sleigh calendar (decided 15 Nov): presents instead of windows ----------
+  const GIFT = { w: 36, h: 30 };
+  const ROWS = [6, 5, 5, 4, 3]; // 23 slots on the sleigh, bottom row first
+  function slotPos(i) {
+    let r = 0, k = i;
+    while (r < ROWS.length && k >= ROWS[r]) { k -= ROWS[r]; r++; }
+    if (r >= ROWS.length) { r = ROWS.length - 1; k = ROWS[r] - 1; }
+    const n = ROWS[r], cx = 170;
+    return [cx - (n * (GIFT.w + 4) - 4) / 2 + k * (GIFT.w + 4), 298 - r * (GIFT.h + 3)];
+  }
+  const TODAY_POS = [276, 400];
+  // Missed presents lie in the snow in up to three neat rows of 7 (smaller than loaded ones), left of today's present.
+  const MISSED_W = 0.8;
+  function missedPos(i) { return [8 + (i % 7) * 35, 396 + Math.floor(i / 7) * 31]; }
+  function layout() {
+    const loaded = [...state.done].filter((n) => n !== 24);
+    const td = todayDoor();
+    const missed = [];
+    for (let n = 1; n <= 23; n++) if (winState(n) === 'missed') missed.push(n);
+    const pos = {};
+    loaded.forEach((n, i) => { pos[n] = slotPos(i); });
+    missed.forEach((n, i) => { pos[n] = missedPos(i); });
+    if (td && td !== 24 && winState(td) === 'today') pos[td] = TODAY_POS;
+    return { loaded, missed, td, pos };
+  }
+  const MODE_GIFT = { moderate: ['#D8783A', '#F4F1EC'], recovery: ['#8E84C4', '#F4F1EC'], day24: ['#C9B27C', '#2E2B22'] };
+  function giftColors(n, st) {
+    if (st === 'today') return n === 24 ? ['#C9B27C', '#2E2B22'] : ['#D3DCE6', '#A3B1BE'];
+    if (st === 'missed') return ['#3A5069', '#6A82A3'];
+    if (st === 'ready') return MODE_GIFT[state.modes[n] || 'moderate'];
+    return MODE_GIFT[state.modes[n] || (n % 2 ? 'moderate' : 'recovery')];
+  }
+  function giftSvg(n, x, y, st, rot) {
+    const s = t(), [c, r] = giftColors(n, st), { w, h } = GIFT;
+    const glow = st === 'today' || st === 'ready' ? `<circle class="glow" cx="${x + w / 2}" cy="${y + h / 2}" r="34" fill="${n === 24 ? '#C9B27C' : '#D3DCE6'}" opacity=".16"/>` : '';
+    return `<g class="gift gift-${st}" data-act="door" data-day="${n}" role="button" tabindex="0" aria-label="${s.day(n)}, ${s.state[st]}"${rot ? ` transform="rotate(${rot} ${x + w / 2} ${y + h / 2})"` : ''}>
+      ${glow}<rect class="box" x="${x}" y="${y}" width="${w}" height="${h}" rx="3" fill="${c}"/>
+      <rect x="${x + w / 2 - 3}" y="${y}" width="6" height="${h}" fill="${r}"/><rect x="${x}" y="${y + h * 0.42}" width="${w}" height="4" fill="${r}"/>
+      <path d="M${x + w / 2} ${y} q-8 -8 -11 -2 q4 4 11 2 q8 -8 11 -2 q-4 4 -11 2" fill="${r}"/>
+      <circle cx="${x + w - 8}" cy="${y + h - 8}" r="7.5" fill="#F4F1EC"/>
+      <text x="${x + w - 8}" y="${y + h - 5}" text-anchor="middle" font-family="Figtree, sans-serif" font-weight="800" font-size="9" fill="#1C2733">${n}</text></g>`;
+  }
+  const FIRS = [[20, 300, 96], [52, 300, 64], [334, 296, 104], [300, 300, 70]];
+  function firSvg(x, base, h) {
+    let s = '';
+    for (let i = 0; i < 3; i++) {
+      const top = base - h + i * h * 0.26, bot = base - h * 0.62 + i * h * 0.3, ww = h * 0.55 * (0.55 + i * 0.25);
+      s += `<path d="M${x} ${top} L${x + ww / 2} ${bot} L${x - ww / 2} ${bot} Z" fill="#2A4433"/>`;
+    }
+    return s;
+  }
+  const ELF = `<g class="sl-elf" transform="translate(-10 0)"><ellipse cx="342" cy="436" rx="11" ry="2.6" fill="#000" opacity=".14"/>
+    <path d="M338.4 429.9 L337.9 436 M345.6 429.9 L346.1 436" stroke="#2F4A3A" stroke-width="3" stroke-linecap="round"/>
+    <path d="M331.8 419.7 Q326.7 423.8 329.8 427.8 M352.2 419.7 Q357.3 413.6 355.3 408.5" fill="none" stroke="#4E7A5F" stroke-width="3.4" stroke-linecap="round"/>
+    <circle cx="342" cy="421.2" r="10.2" fill="#4E7A5F"/><rect x="334.4" y="410" width="15.3" height="3.6" rx="1.7" fill="#D8783A"/>
+    <circle cx="342" cy="404.9" r="6.3" fill="#E2B38F"/><circle cx="339.8" cy="404.4" r="1.1" fill="#2B2A28"/><circle cx="344.2" cy="404.4" r="1.1" fill="#2B2A28"/>
+    <path d="M335.7 401.8 Q340 386 351.2 389.1 Q345.1 394.2 348.3 401.8 Z" fill="#4E7A5F"/><circle cx="351.7" cy="389.1" r="2" fill="#C9B27C"/></g>`;
+
+  // Bauble Santa, small, for the sleigh scene. (x, y) = where his boots stand.
+  function santaSvg(x, y, s, wave) {
+    return `<g transform="translate(${x} ${y}) scale(${s})" aria-hidden="true">
+      <ellipse cx="0" cy="2" rx="22" ry="4" fill="#000" opacity=".14"/>
+      <path d="M-8 -22 L-9 -2 M8 -22 L9 -2" stroke="#6E2A27" stroke-width="9" stroke-linecap="round"/>
+      <ellipse cx="-11" cy="0" rx="8" ry="4" fill="#2B2A28"/><ellipse cx="11" cy="0" rx="8" ry="4" fill="#2B2A28"/>
+      <path d="M-18 -46 Q-28 -34 -20 -26" fill="none" stroke="#B5473C" stroke-width="9" stroke-linecap="round"/><circle cx="-20" cy="-25" r="5" fill="#F4F1EC"/>
+      ${wave ? `<path d="M18 -48 Q34 -52 30 -70" fill="none" stroke="#B5473C" stroke-width="9" stroke-linecap="round"/><circle cx="30" cy="-73" r="5" fill="#F4F1EC"/>`
+             : `<path d="M18 -46 Q28 -34 20 -26" fill="none" stroke="#B5473C" stroke-width="9" stroke-linecap="round"/><circle cx="20" cy="-25" r="5" fill="#F4F1EC"/>`}
+      <circle cx="0" cy="-38" r="22" fill="#B5473C"/>
+      <rect x="-22" y="-34" width="44" height="6" fill="#2F4537"/><rect x="-5" y="-35.5" width="10" height="9" rx="1.5" fill="none" stroke="#C9B27C" stroke-width="2"/>
+      <path d="M-13 -62 Q0 -28 13 -62 Z" fill="#F4F1EC"/>
+      <circle cx="0" cy="-68" r="11" fill="#E2B38F"/>
+      <circle cx="-4" cy="-70" r="1.7" fill="#2B2A28"/><circle cx="4" cy="-70" r="1.7" fill="#2B2A28"/><circle cx="0" cy="-66" r="2.6" fill="#C9705F"/>
+      <path d="M-12 -74 Q-4 -98 14 -92 L11 -76 Z" fill="#B5473C"/><rect x="-13" y="-78" width="26" height="6" rx="3" fill="#F4F1EC"/><circle cx="15" cy="-92" r="4.5" fill="#F4F1EC"/>
+    </g>`;
+  }
+
+  // Big bauble Santa for day 24 (variant B): stands in front of the sleigh, cut off by the snow bank, waving.
+  function bigSanta(cx, cy, r) {
+    const W = '#F4F1EC', K = '#2B2A28';
+    return `<g aria-hidden="true">
+      <circle cx="${cx}" cy="${cy + r * 2.48}" r="${r * 1.6}" fill="#B5473C"/>
+      <rect x="${cx - r * 1.6}" y="${cy + r * 2.22}" width="${r * 3.2}" height="${r * 0.26}" fill="#2F4537"/>
+      <path d="M${cx - r * 1.22} ${cy + r * 1.35} Q${cx - r * 1.83} ${cy + r * 0.48} ${cx - r * 1.43} ${cy - r * 0.22}" fill="none" stroke="#B5473C" stroke-width="${r * 0.48}" stroke-linecap="round"/>
+      <circle cx="${cx - r * 1.41}" cy="${cy - r * 0.35}" r="${r * 0.28}" fill="${W}"/>
+      <path d="M${cx - r * 0.95} ${cy - r * 0.45} Q${cx - r * 0.6} ${cy - r * 2.1} ${cx + r * 0.9} ${cy - r * 1.75} Q${cx + r * 1.45} ${cy - r * 1.5} ${cx + r * 1.25} ${cy - r * 0.9} Q${cx + r * 0.9} ${cy - r * 1.2} ${cx + r * 0.95} ${cy - r * 0.45} Z" fill="#B5473C"/>
+      <circle cx="${cx + r * 1.3}" cy="${cy - r * 0.82}" r="${r * 0.22}" fill="${W}"/>
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="#E2B38F"/>
+      <path d="M${cx - r * 1.05} ${cy - r * 0.05} Q${cx - r * 1.25} ${cy + r * 1.2} ${cx - r * 0.5} ${cy + r * 1.55} Q${cx} ${cy + r * 1.9} ${cx + r * 0.5} ${cy + r * 1.55} Q${cx + r * 1.25} ${cy + r * 1.2} ${cx + r * 1.05} ${cy - r * 0.05} Q${cx + r * 0.6} ${cy + r * 0.5} ${cx} ${cy + r * 0.42} Q${cx - r * 0.6} ${cy + r * 0.5} ${cx - r * 1.05} ${cy - r * 0.05} Z" fill="${W}"/>
+      <rect x="${cx - r * 1.1}" y="${cy - r * 0.72}" width="${r * 2.2}" height="${r * 0.42}" rx="${r * 0.21}" fill="${W}"/>
+      <path d="M${cx - r * 0.48} ${cy - r * 0.12} q${r * 0.16} ${-r * 0.18} ${r * 0.32} 0 M${cx + r * 0.16} ${cy - r * 0.12} q${r * 0.16} ${-r * 0.18} ${r * 0.32} 0" fill="none" stroke="${K}" stroke-width="${Math.max(2, r * 0.07)}" stroke-linecap="round"/>
+      <ellipse cx="${cx - r * 0.58}" cy="${cy + r * 0.18}" rx="${r * 0.17}" ry="${r * 0.1}" fill="#E8907F" opacity=".8"/><ellipse cx="${cx + r * 0.58}" cy="${cy + r * 0.18}" rx="${r * 0.17}" ry="${r * 0.1}" fill="#E8907F" opacity=".8"/>
+      <path d="M${cx - r * 0.55} ${cy + r * 0.38} Q${cx - r * 0.25} ${cy + r * 0.15} ${cx} ${cy + r * 0.32} Q${cx + r * 0.25} ${cy + r * 0.15} ${cx + r * 0.55} ${cy + r * 0.38} Q${cx + r * 0.25} ${cy + r * 0.48} ${cx} ${cy + r * 0.4} Q${cx - r * 0.25} ${cy + r * 0.48} ${cx - r * 0.55} ${cy + r * 0.38} Z" fill="${W}" stroke="#D9D4CC" stroke-width="1"/>
+      <circle cx="${cx}" cy="${cy + r * 0.18}" r="${r * 0.17}" fill="#C9705F"/>
+      <path d="M${cx - r * 0.2} ${cy + r * 0.62} Q${cx} ${cy + r * 0.82} ${cx + r * 0.2} ${cy + r * 0.62}" fill="#8E352D"/>
+    </g>`;
+  }
+  function sleighHtml(opts) {
+    const L = layout();
+    let gifts = '';
+    L.loaded.forEach((n) => { if (state.pending && state.pending.day === n) return; const [x, y] = L.pos[n]; gifts += giftSvg(n, x, y, 'done', 0); });
+    let ground = '';
+    L.missed.forEach((n, i) => { const [x, y] = L.pos[n]; ground += `<g transform="translate(${x} ${y}) scale(${MISSED_W}) translate(${-x} ${-y})">${giftSvg(n, x, y, 'missed', i % 2 ? 4 : -4)}</g>`; });
+    if (L.td && L.td !== 24 && winState(L.td) === 'today' && !opts.finale) { const [x, y] = L.pos[L.td]; ground += giftSvg(L.td, x, y, 'today', 0); }
+    if (state.pending && !opts.finale) {
+      const n = state.pending.day, [x, y] = state.pending.from, s = t();
+      ground += giftSvg(n, x, y, 'ready', 0)
+        .replace('data-act="door" ', '')
+        .replace(/aria-label="[^"]*"/, `aria-label="${s.readyLabel(n)}"`)
+        .replace('<circle class="glow"', '<circle class="glow" ');
+      ground += `<g class="throw-hint" aria-hidden="true"><path d="M${x + GIFT.w / 2} ${y - 14} l0 -22 M${x + GIFT.w / 2 - 7} ${y - 29} l7 -7 l7 7" fill="none" stroke="#D3DCE6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="${x + GIFT.w / 2}" y="${y - 46}" text-anchor="middle" font-family="Figtree, sans-serif" font-weight="700" font-size="12" fill="#D3DCE6">${s.swipeHint}</text></g>`;
+    }
+    const rideOpen = !opts.finale && (winState(24) === 'today' || winState(24) === 'missed');
+    return `<svg class="sl-svg" viewBox="0 140 360 360" preserveAspectRatio="xMidYMax meet" aria-label="${t().tagline}">
+      <path d="M-200 330 Q180 296 560 330 L560 520 L-200 520 Z" fill="#2A3846"/>
+      ${FIRS.map(([x, b, h]) => firSvg(x, b, h)).join('')}
+      <g class="sl-ride${rideOpen ? ' ride' : ''}"${rideOpen ? ` data-act="door" data-day="24" role="button" tabindex="0" aria-label="${t().rideLabel}"` : ''}>
+        ${rideOpen ? '<path class="ride-glow" d="M52 362 L262 362 Q300 362 302 322 L302 300 L272 300 L272 324 Q272 338 256 338 L52 338 Z" fill="none" stroke="#C9B27C" stroke-width="10" stroke-linejoin="round" opacity=".6"/>' : ''}
+        ${opts.finale ? santaSvg(282, 336, 0.62, true) : ''}
+        <path d="M52 362 L262 362 Q300 362 302 322 L302 300 L272 300 L272 324 Q272 338 256 338 L52 338 Z" fill="#B5473C"/>
+        <path d="M44 384 L272 384 Q310 384 310 358" fill="none" stroke="#C9B27C" stroke-width="5" stroke-linecap="round"/>
+        <path d="M84 362 L84 384 M232 362 L232 384" stroke="#C9B27C" stroke-width="4"/>
+        <g class="pile">${gifts}</g>
+      </g>
+      <g class="ground">${ground}</g>
+      ${opts.finale ? '' : rideOpen ? `<g class="ride-santa" data-act="door" data-day="24">${bigSanta(262, 378, 46)}</g>` : ELF}
+      <g class="puff"></g>
+    </svg>`;
+  }
+  // Done moment: the present that was just finished flies from where it lay onto its slot on the sleigh.
+  function playLoad() {
+    const jl = state.justLoaded;
+    state.justLoaded = null;
+    if (!jl || prefersReduced()) return;
+    const g = $screen.querySelector(`.pile .gift[data-day="${jl.day}"]`);
+    if (!g) return;
+    const to = layout().pos[jl.day];
+    const dx = jl.from[0] - to[0], dy = jl.from[1] - to[1];
+    g.style.transformBox = 'fill-box'; g.style.transformOrigin = 'center';
+    const a = g.animate([
+      { transform: `translate(${dx}px, ${dy}px) rotate(0deg)` },
+      { transform: `translate(${dx * 0.45}px, ${Math.min(dy, 0) - 70}px) rotate(-16deg)`, offset: 0.5 },
+      { transform: 'translate(0px, -6px) rotate(4deg)', offset: 0.85 },
+      { transform: 'translate(0px, 3px) rotate(0deg)', offset: 0.93 },
+      { transform: 'translate(0px, 0px) rotate(0deg)' }], { duration: 1100, easing: 'cubic-bezier(.3,.1,.3,1)' });
+    const box = g.querySelector('.box');
+    const flash = box.cloneNode(); flash.setAttribute('fill', '#D3DCE6'); flash.classList.remove('box'); g.appendChild(flash);
+    flash.animate([{ opacity: 1 }, { opacity: 1, offset: 0.3 }, { opacity: 0 }], { duration: 700, fill: 'forwards' });
+    $screen.querySelector('.sl-elf')?.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(-10px)', offset: 0.3 }, { transform: 'translateY(0)' }], { duration: 600, easing: 'ease-out' });
+    a.onfinish = () => {
+      flash.remove();
+      const puff = $screen.querySelector('.puff');
+      if (!puff) return;
+      const cx = to[0] + GIFT.w / 2, cy = to[1] + GIFT.h;
+      for (let i = 0; i < 9; i++) {
+        const ang = Math.PI * (1 + i / 8);
+        const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        c.setAttribute('cx', cx); c.setAttribute('cy', cy); c.setAttribute('r', 3); c.setAttribute('fill', '#EEF1F3');
+        puff.appendChild(c);
+        c.animate([{ transform: 'translate(0,0)', opacity: 0.8 }, { transform: `translate(${Math.cos(ang) * 22}px, ${Math.sin(ang) * 12}px)`, opacity: 0 }], { duration: 600, easing: 'ease-out', fill: 'forwards' });
+      }
+    };
+  }
+  function puffAt(cx, cy) {
+    const puff = $screen.querySelector('.puff');
+    if (!puff) return;
+    for (let i = 0; i < 9; i++) {
+      const ang = Math.PI * (1 + i / 8);
+      const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      c.setAttribute('cx', cx); c.setAttribute('cy', cy); c.setAttribute('r', 3); c.setAttribute('fill', '#EEF1F3');
+      puff.appendChild(c);
+      c.animate([{ transform: 'translate(0,0)', opacity: 0.8 }, { transform: `translate(${Math.cos(ang) * 22}px, ${Math.sin(ang) * 12}px)`, opacity: 0 }], { duration: 600, easing: 'ease-out', fill: 'forwards' });
+    }
+  }
+  // Throw the waiting present onto the sleigh. It always lands; a stronger flick only makes a higher arc.
+  function throwGift(g, dx, dy, power) {
+    if (!state.pending || g.dataset.thrown) return;
+    g.dataset.thrown = '1';
+    const day = state.pending.day, from = state.pending.from, to = layout().pos[day];
+    let landed = false;
+    const land = () => {
+      if (landed) return; landed = true;
+      state.pending = null;
+      renderCalendar();
+      puffAt(to[0] + GIFT.w / 2, to[1] + GIFT.h);
+      $screen.querySelector('.sl-elf')?.animate([{ transform: 'translate(-10px,0)' }, { transform: 'translate(-10px,-10px)', offset: 0.3 }, { transform: 'translate(-10px,0)' }], { duration: 600, easing: 'ease-out' });
+    };
+    if (prefersReduced()) { land(); return; }
+    $screen.querySelector('.throw-hint')?.remove();
+    const tx = to[0] - from[0], ty = to[1] - from[1];
+    const lift = 50 + 70 * Math.min(1, power);
+    g.style.transformBox = 'fill-box'; g.style.transformOrigin = 'center';
+    const a = g.animate([
+      { transform: `translate(${dx}px, ${dy}px) rotate(0deg)` },
+      { transform: `translate(${(dx + tx) * 0.5}px, ${Math.min(dy, ty) - lift}px) rotate(-18deg)`, offset: 0.5 },
+      { transform: `translate(${tx}px, ${ty - 6}px) rotate(4deg)`, offset: 0.86 },
+      { transform: `translate(${tx}px, ${ty + 3}px) rotate(0deg)`, offset: 0.94 },
+      { transform: `translate(${tx}px, ${ty}px) rotate(0deg)` }], { duration: 900 + 300 * Math.min(1, power), easing: 'cubic-bezier(.3,.1,.3,1)', fill: 'forwards' });
+    a.onfinish = land;
+    setTimeout(land, 1400); // safety net if the animation is interrupted (tab hidden etc.)
+  }
+  let drag = null;
+  document.getElementById('screen').addEventListener('pointerdown', (e) => {
+    const g = e.target.closest('.gift-ready');
+    if (!g) return;
+    e.preventDefault();
+    try { g.setPointerCapture(e.pointerId); } catch (err) { /* synthetic or lost pointer: dragging still works via the screen listeners */ }
+    const k = 1 / g.ownerSVGElement.getScreenCTM().a;
+    drag = { g, x0: e.clientX, y0: e.clientY, k, dx: 0, dy: 0, moved: false, hist: [[performance.now(), 0]] };
+  });
+  document.getElementById('screen').addEventListener('pointermove', (e) => {
+    if (!drag) return;
+    drag.dx = (e.clientX - drag.x0) * drag.k;
+    drag.dy = (e.clientY - drag.y0) * drag.k;
+    if (Math.hypot(drag.dx, drag.dy) > 4) drag.moved = true;
+    drag.g.style.transform = `translate(${drag.dx}px, ${Math.min(drag.dy, 16)}px)`;
+    drag.hist.push([performance.now(), drag.dy]);
+    if (drag.hist.length > 6) drag.hist.shift();
+  });
+  const endDrag = (e) => {
+    if (!drag) return;
+    const d = drag; drag = null;
+    const [t0, y0] = d.hist[0], [t1, y1] = d.hist[d.hist.length - 1];
+    const vy = (y1 - y0) / Math.max(1, t1 - t0); // units per ms, negative = upwards
+    if (!d.moved) { throwGift(d.g, 0, 0, 0.3); return; } // a tap throws too
+    if (d.dy < -30 || vy < -0.35) { throwGift(d.g, d.dx, Math.min(d.dy, 16), Math.min(1, Math.max(-vy, -d.dy / 120))); return; }
+    d.g.animate([{ transform: d.g.style.transform }, { transform: 'translate(0px, 0px)' }], { duration: 250, easing: 'ease-out' });
+    d.g.style.transform = '';
+  };
+  document.getElementById('screen').addEventListener('pointerup', endDrag);
+  document.getElementById('screen').addEventListener('pointercancel', endDrag);
+
+  function finishDay(day, mode) {
+    const from = layout().pos[day] || TODAY_POS;
+    const wasDone = state.done.has(day);
+    state.modes[day] = mode;
+    state.done.add(day); saveDone();
+    if (!wasDone) state.pending = { day, from };
+  }
+
+  // Whole calendar days from the simulated date until 1 December (00:00 local time).
+  const daysUntilStart = () => Math.ceil((openDate(1) - new Date(state.simDate.getFullYear(), state.simDate.getMonth(), state.simDate.getDate())) / 864e5);
+  function statusLine() {
+    const s = t(), n = state.done.size, today = todayDoor();
+    if (state.simDate < openDate(1)) return s.statusPre;
+    if (today === null) return state.done.has(24) ? s.statusAfter([...state.done].filter((d) => d !== 24).length) : s.status24Open;
+    if (state.pending && state.pending.day === today) return s.statusReady(today);
+    if (today === 24 && !state.done.has(24)) return s.status24Open;
+    if (state.done.has(today)) return today === 24 ? s.status24Done : s.statusDone(today);
+    return s.statusOpen(today, n);
+  }
+  const healthNote = () => `<div class="health">${I.info}<span>${t().healthText}</span></div>`;
+  const modeIcon = (m) => (m === 'moderate' ? I.flame : m === 'recovery' ? I.leaf : I.star);
+  const badge = (m) => `<span class="fn-badge fn-badge--${m}">${modeIcon(m)}${m === 'day24' ? t().d24Badge : t()[m]}</span>`;
+
+  // ---------- Screens ----------
+  const $screen = document.getElementById('screen');
+
+  function renderCalendar() {
+    const s = t();
+    const menu = !state.menuOpen ? '' : `
+      <div class="menu-wrap"><div class="fn-menu" role="dialog" aria-label="${s.menu}">
+        <div class="fn-menu__head"><span>Feliz Navisquad</span><button class="fn-link" data-act="menu-close" aria-label="${s.close}">${I.x}</button></div>
+        <div class="fn-menu__item" style="cursor:default">${I.globe}${s.language}
+          <span class="fn-toggle" role="group" aria-label="${s.language}">
+            <button data-act="lang" data-lang="de" aria-pressed="${state.lang === 'de'}">DE</button>
+            <button data-act="lang" data-lang="en" aria-pressed="${state.lang === 'en'}">EN</button></span></div>
+        <button class="fn-menu__item" data-act="menu-section" data-section="about" aria-expanded="${state.menuSection === 'about'}">${I.info}${s.about}</button>
+        ${state.menuSection === 'about' ? `<div class="fn-menu__text">${s.aboutText}</div>` : ''}
+        <button class="fn-menu__item" data-act="menu-section" data-section="workshop" aria-expanded="${state.menuSection === 'workshop'}">${I.lock}${s.workshop}</button>
+        ${state.menuSection === 'workshop' ? (() => { const left = []; for (let n = 1; n <= 24; n++) if (winState(n) === 'locked') left.push(n);
+          return left.length ? `<div class="shelf">${left.map((n) => `<button data-act="shelf" data-day="${n}" aria-label="${s.day(n)}, ${s.opensOn(fmtDay(n))}"><b>${n}</b>${openDate(n).getDate()}.12.</button>`).join('')}</div>` : `<div class="fn-menu__text">${s.workshopEmpty}</div>`; })() : ''}
+        <button class="fn-menu__item" data-act="menu-section" data-section="health" aria-expanded="${state.menuSection === 'health'}">${I.heart}${s.health}</button>
+        ${state.menuSection === 'health' ? `<div class="fn-menu__text">${s.healthText}</div>` : ''}
+      </div></div>`;
+    $screen.innerHTML = `
+      <div class="fn-scene cal${motionCls()}">
+        <div class="snowlayer">${flakes(26, { min: 2, range: 3, op: .2, opRange: .3, dur: 7, durRange: 7 })}</div>
+        ${sleighHtml({ finale: false })}
+        ${state.simDate < openDate(1) ? `<div class="pre-note" role="status"><div class="pre-days">${daysUntilStart()}</div>
+          <div class="pre-title">${s.preTitle}</div><div class="fn-meta">${s.preCount(daysUntilStart())}</div></div>` : ''}
+        ${storageOk ? '' : `<div class="storage-note">${I.info}<span>${s.storageNote}</span></div>`}
+        <button class="fn-menu-btn" data-act="menu" aria-label="${s.menu}" aria-expanded="${state.menuOpen}">${I.ellipsis}</button>
+        ${menu}
+        ${(winState(24) === 'today' || winState(24) === 'missed')
+          ? `<div class="fn-snowbank snowbank snowbank--ride"><div class="t1">${statusLine()}</div><button class="fn-btn ride-btn" data-act="door" data-day="24">${s.rideHint}</button></div>`
+          : `<div class="fn-snowbank snowbank"><div class="t1">${s.tagline}</div><div class="t2">${statusLine()}</div></div>`}
+      </div>`;
+  }
+
+  // Version 2: the window opens. Zooms in from the tapped window, two shutters swing open, each half is one answer.
+  function renderModeWindow(day) {
+    const s = t();
+    const pane = (m, side) => `
+      <button class="pane mode-tile" data-act="start" data-mode="${m}">
+        <div class="mode-img"><div class="mode-art img-area--${m}"><img src="${ART[m]}" alt="Elf · ${s[m]}"></div></div>
+        <div class="answer" style="color:var(--${accentOf(m)})">${s.feel[m]}</div>
+        <div class="fn-meta">${s.modeMeta(s[m], routineFor(day, m).length)}</div>
+        <div class="pane-routine">${modeIcon(m)}<b>${routineName(day, m)}</b></div>
+        <span class="leaf leaf--${side}" aria-hidden="true"><i>${day}</i></span>
+      </button>`;
+    $screen.innerHTML = `<div class="scroll centred modes${motionCls()}">
+      <button class="fn-link" data-act="home">${I.back}${s.calendar}</button>
+      <div class="centred-body">
+        <div class="fn-meta">${s.day(day)} · ${fmtDay(day)}</div>
+        <h1 class="screen-title">${s.feelQ}</h1>
+        ${state.done.has(day) ? `<div style="margin-top:10px"><span class="fn-badge fn-badge--done">${I.check}${s.doneBadge}</span></div>` : ''}
+        <div class="tiles shutters">${pane('moderate', 'l')}${pane('recovery', 'r')}</div>
+        ${healthNote()}</div></div>`;
+    zoomIn();
+  }
+  function zoomIn() {
+    const z = state.zoomFrom; state.zoomFrom = null;
+    if (!z || prefersReduced()) return;
+    const el = $screen.firstElementChild, w = $screen.clientWidth, h = $screen.clientHeight;
+    el.animate([
+      { transform: `translate(${z.x - w / 2}px, ${z.y - h / 2}px) scale(${z.k})`, opacity: 0.2, borderRadius: '40px' },
+      { transform: 'none', opacity: 1, borderRadius: '0px' }
+    ], { duration: 380, easing: 'cubic-bezier(.2,.7,.2,1)' });
+  }
+
+  // Version 3: one picture and a two-way switch. Nothing is picked at first, so neither mode looks like the default.
+  function renderModeSwitch(day) {
+    const s = t();
+    const opt = (m) => `<button role="radio" data-act="pick" data-mode="${m}">${modeIcon(m)}${s.feel[m]}</button>`;
+    $screen.innerHTML = `<div class="scroll centred${motionCls()}">
+      <button class="fn-link" data-act="home">${I.back}${s.calendar}</button>
+      <div class="centred-body">
+        <div class="fn-meta">${s.day(day)} · ${fmtDay(day)}</div>
+        <h1 class="screen-title">${s.feelQ}</h1>
+        ${state.done.has(day) ? `<div style="margin-top:10px"><span class="fn-badge fn-badge--done">${I.check}${s.doneBadge}</span></div>` : ''}
+        <div class="fn-tile mode-tile switch-card" style="margin-top:16px">
+          <div class="mode-img"><div class="mode-art" id="pickArt"><img alt=""></div></div>
+          <div class="switch" id="switch" role="radiogroup" aria-label="${s.feelQ}"><span class="thumb"></span>${opt('moderate')}${opt('recovery')}</div>
+          <div class="pick-info" id="pickInfo"></div>
+          <button class="fn-btn fn-btn--block" id="pickStart" data-act="start">${s.start}</button>
+        </div>
+        ${healthNote()}</div></div>`;
+    applyPick();
+  }
+  function applyPick() {
+    const s = t(), m = state.pick, day = state.view.day;
+    const sw = document.getElementById('switch');
+    if (!sw) throw new Error('Switch not on screen');
+    sw.dataset.pick = m || '';
+    sw.querySelectorAll('[role=radio]').forEach((b, i) => {
+      b.setAttribute('aria-checked', String(b.dataset.mode === m));
+      b.tabIndex = (m ? b.dataset.mode === m : i === 0) ? 0 : -1;
+    });
+    const art = document.getElementById('pickArt');
+    art.className = 'mode-art ' + (m ? 'img-area--' + m : 'img-area--neutral');
+    art.firstElementChild.src = ART[m || 'neutral'];
+    art.firstElementChild.alt = m ? `Elf · ${s[m]}` : 'Two elves, waiting';
+    document.getElementById('pickInfo').innerHTML = m
+      ? `<div class="pane-routine" style="color:var(--${accentOf(m)})">${modeIcon(m)}<b>${routineName(day, m)}</b></div><div class="fn-meta">${s.modeMeta(s[m], routineFor(day, m).length)}</div>`
+      : `<div class="fn-meta">${s.pickHint}</div>`;
+    const start = document.getElementById('pickStart');
+    start.className = 'fn-btn fn-btn--block' + (m ? ' fn-btn--' + m : ' is-hidden');
+    start.dataset.mode = m || '';
+    start.disabled = !m;
+  }
+  // Mode-choice illustrations (decided 15 Nov): bauble-style elves as square SVGs. Waiting = both elves; Moderate = flexing elf (scarf #D8783A); Recovery = meditating elf (scarf #8E84C4).
+  const ART = {
+    neutral: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNjAgMTYwIj48ZWxsaXBzZSBjeD0iODAiIGN5PSIxNDAiIHJ4PSI2NCIgcnk9IjQiIGZpbGw9IiMwMDAiIG9wYWNpdHk9Ii4wOCIvPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKC02IDE4KSBzY2FsZSguNjIpIj48cGF0aCBkPSJNNzIgMTE2IEw3MSAxNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJGNEEzQSIgc3Ryb2tlLXdpZHRoPSIxMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTg4IDExNiBMODkgMTQwIiBmaWxsPSJub25lIiBzdHJva2U9IiMyRjRBM0EiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03OSAxNDMgUTcxIDEzNiA2MSAxNDEgcS01IC0yIC00IC03IiBmaWxsPSJub25lIiBzdHJva2U9IiMyRjRBM0EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTgxIDE0MyBRODkgMTM2IDk5IDE0MSBxNSAtMiA0IC03IiBmaWxsPSJub25lIiBzdHJva2U9IiMyRjRBM0EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTU4IDk2IFE1MCAxMDggNjAgMTE0IiBmaWxsPSJub25lIiBzdHJva2U9IiM0RTdBNUYiIHN0cm9rZS13aWR0aD0iMTEiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxjaXJjbGUgY3g9IjYyIiBjeT0iMTE1IiByPSI2LjUiIGZpbGw9IiNFMkIzOEYiLz48cGF0aCBkPSJNMTAyIDk2IFExMTAgMTA4IDEwMCAxMTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzRFN0E1RiIgc3Ryb2tlLXdpZHRoPSIxMSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PGNpcmNsZSBjeD0iOTgiIGN5PSIxMTUiIHI9IjYuNSIgZmlsbD0iI0UyQjM4RiIvPjxjaXJjbGUgY3g9IjgwIiBjeT0iOTgiIHI9IjI2IiBmaWxsPSIjNEU3QTVGIi8+PHJlY3QgeD0iNTYiIHk9IjEwNCIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjYiIGZpbGw9IiMyRjRBM0EiLz48cGF0aCBkPSJNNTggNzYgTDYxIDg1IEw2NSA3NiBMNjkgODUgTDczIDc2IEw3NyA4NSBMODEgNzYgTDg1IDg1IEw4OSA3NiBMOTMgODUgTDk3IDc2IEwxMDEgODUgTDEwNSA3NiBMMTAyIDc2IEwxMDIgNzIgTDU4IDcyIFoiIGZpbGw9IiNEODc4M0EiLz48cGF0aCBkPSJNNjYgNTYgTDUyIDQ4IEw2NiA2NCBaIiBmaWxsPSIjRTJCMzhGIi8+PHBhdGggZD0iTTk0IDU2IEwxMDggNDggTDk0IDY0IFoiIGZpbGw9IiNFMkIzOEYiLz48Y2lyY2xlIGN4PSI4MCIgY3k9IjU4IiByPSIxNSIgZmlsbD0iI0UyQjM4RiIvPjxjaXJjbGUgY3g9Ijc0IiBjeT0iNTUiIHI9IjIuNCIgZmlsbD0iIzJCMkEyOCIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNTUiIHI9IjIuNCIgZmlsbD0iIzJCMkEyOCIvPjxlbGxpcHNlIGN4PSI3MCIgY3k9IjYzIiByeD0iNCIgcnk9IjIuNSIgZmlsbD0iI0U4OTA3RiIgb3BhY2l0eT0iLjgiLz48ZWxsaXBzZSBjeD0iOTAiIGN5PSI2MyIgcng9IjQiIHJ5PSIyLjUiIGZpbGw9IiNFODkwN0YiIG9wYWNpdHk9Ii44Ii8+PGNpcmNsZSBjeD0iODAiIGN5PSI2MSIgcj0iMi42IiBmaWxsPSIjRDk4Qzc4Ii8+PHBhdGggZD0iTTc1IDY2IHE1IDQgMTAgMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMkIyQTI4IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxwYXRoIGQ9Ik02NCA0OCBRNzQgMTQgMTA4IDEyIFE4OCAyOCA5NiA0OCBaIiBmaWxsPSIjNEU3QTVGIi8+PHJlY3QgeD0iNjIiIHk9IjQ0IiB3aWR0aD0iMzYiIGhlaWdodD0iNyIgcng9IjMuNSIgZmlsbD0iI0Q4NzgzQSIvPjxjaXJjbGUgY3g9IjEwOSIgY3k9IjEyIiByPSI1IiBmaWxsPSIjQzlCMjdDIi8+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDY2IDE4KSBzY2FsZSguNjIpIj48cGF0aCBkPSJNNzIgMTE2IEw3MSAxNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJGNEEzQSIgc3Ryb2tlLXdpZHRoPSIxMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTg4IDExNiBMODkgMTQwIiBmaWxsPSJub25lIiBzdHJva2U9IiMyRjRBM0EiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik03OSAxNDMgUTcxIDEzNiA2MSAxNDEgcS01IC0yIC00IC03IiBmaWxsPSJub25lIiBzdHJva2U9IiMyRjRBM0EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTgxIDE0MyBRODkgMTM2IDk5IDE0MSBxNSAtMiA0IC03IiBmaWxsPSJub25lIiBzdHJva2U9IiMyRjRBM0EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTU4IDk2IFE1MCAxMDggNjAgMTE0IiBmaWxsPSJub25lIiBzdHJva2U9IiM0RTdBNUYiIHN0cm9rZS13aWR0aD0iMTEiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxjaXJjbGUgY3g9IjYyIiBjeT0iMTE1IiByPSI2LjUiIGZpbGw9IiNFMkIzOEYiLz48cGF0aCBkPSJNMTAyIDk2IFExMTAgMTA4IDEwMCAxMTQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzRFN0E1RiIgc3Ryb2tlLXdpZHRoPSIxMSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PGNpcmNsZSBjeD0iOTgiIGN5PSIxMTUiIHI9IjYuNSIgZmlsbD0iI0UyQjM4RiIvPjxjaXJjbGUgY3g9IjgwIiBjeT0iOTgiIHI9IjI2IiBmaWxsPSIjNEU3QTVGIi8+PHJlY3QgeD0iNTYiIHk9IjEwNCIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjYiIGZpbGw9IiMyRjRBM0EiLz48cGF0aCBkPSJNNTggNzYgTDYxIDg1IEw2NSA3NiBMNjkgODUgTDczIDc2IEw3NyA4NSBMODEgNzYgTDg1IDg1IEw4OSA3NiBMOTMgODUgTDk3IDc2IEwxMDEgODUgTDEwNSA3NiBMMTAyIDc2IEwxMDIgNzIgTDU4IDcyIFoiIGZpbGw9IiM4RTg0QzQiLz48cGF0aCBkPSJNNjYgNTYgTDUyIDQ4IEw2NiA2NCBaIiBmaWxsPSIjRTJCMzhGIi8+PHBhdGggZD0iTTk0IDU2IEwxMDggNDggTDk0IDY0IFoiIGZpbGw9IiNFMkIzOEYiLz48Y2lyY2xlIGN4PSI4MCIgY3k9IjU4IiByPSIxNSIgZmlsbD0iI0UyQjM4RiIvPjxjaXJjbGUgY3g9Ijc0IiBjeT0iNTUiIHI9IjIuNCIgZmlsbD0iIzJCMkEyOCIvPjxjaXJjbGUgY3g9Ijg2IiBjeT0iNTUiIHI9IjIuNCIgZmlsbD0iIzJCMkEyOCIvPjxlbGxpcHNlIGN4PSI3MCIgY3k9IjYzIiByeD0iNCIgcnk9IjIuNSIgZmlsbD0iI0U4OTA3RiIgb3BhY2l0eT0iLjgiLz48ZWxsaXBzZSBjeD0iOTAiIGN5PSI2MyIgcng9IjQiIHJ5PSIyLjUiIGZpbGw9IiNFODkwN0YiIG9wYWNpdHk9Ii44Ii8+PGNpcmNsZSBjeD0iODAiIGN5PSI2MSIgcj0iMi42IiBmaWxsPSIjRDk4Qzc4Ii8+PHBhdGggZD0iTTc1IDY2IHE1IDQgMTAgMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMkIyQTI4IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxwYXRoIGQ9Ik02NCA0OCBRNzQgMTQgMTA4IDEyIFE4OCAyOCA5NiA0OCBaIiBmaWxsPSIjNEU3QTVGIi8+PHJlY3QgeD0iNjIiIHk9IjQ0IiB3aWR0aD0iMzYiIGhlaWdodD0iNyIgcng9IjMuNSIgZmlsbD0iIzhFODRDNCIvPjxjaXJjbGUgY3g9IjEwOSIgY3k9IjEyIiByPSI1IiBmaWxsPSIjQzlCMjdDIi8+PC9nPjx0ZXh0IHg9IjcyIiB5PSI0MCIgZm9udC1mYW1pbHk9IkZpZ3RyZWUsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI4MDAiIGZvbnQtc2l6ZT0iMjAiIGZpbGw9IiM0QTVENzIiPj88L3RleHQ+PC9zdmc+',
+    moderate: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNjAgMTYwIj48ZWxsaXBzZSBjeD0iODAiIGN5PSIxNDkiIHJ4PSI0MiIgcnk9IjQiIGZpbGw9IiMwMDAiIG9wYWNpdHk9Ii4wOCIvPjxwYXRoIGQ9Ik03MiAxMTYgTDY0IDE0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMkY0QTNBIiBzdHJva2Utd2lkdGg9IjEwIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNODggMTE2IEw5NiAxNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJGNEEzQSIgc3Ryb2tlLXdpZHRoPSIxMCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTcyIDE0MyBRNjQgMTM2IDU0IDE0MSBxLTUgLTIgLTQgLTciIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJGNEEzQSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNODggMTQzIFE5NiAxMzYgMTA2IDE0MSBxNSAtMiA0IC03IiBmaWxsPSJub25lIiBzdHJva2U9IiMyRjRBM0EiIHN0cm9rZS13aWR0aD0iNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTU4IDk0IFEzNiA5OCA0MCA3NiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNEU3QTVGIiBzdHJva2Utd2lkdGg9IjExIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48Y2lyY2xlIGN4PSI0MSIgY3k9IjcyIiByPSI2LjUiIGZpbGw9IiNFMkIzOEYiLz48cGF0aCBkPSJNMTAyIDk0IFExMjQgOTggMTIwIDc2IiBmaWxsPSJub25lIiBzdHJva2U9IiM0RTdBNUYiIHN0cm9rZS13aWR0aD0iMTEiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxjaXJjbGUgY3g9IjExOSIgY3k9IjcyIiByPSI2LjUiIGZpbGw9IiNFMkIzOEYiLz48Y2lyY2xlIGN4PSI4MCIgY3k9Ijk4IiByPSIyNiIgZmlsbD0iIzRFN0E1RiIvPjxyZWN0IHg9IjU2IiB5PSIxMDQiIHdpZHRoPSI0OCIgaGVpZ2h0PSI2IiBmaWxsPSIjMkY0QTNBIi8+PHBhdGggZD0iTTU4IDc2IEw2MSA4NSBMNjUgNzYgTDY5IDg1IEw3MyA3NiBMNzcgODUgTDgxIDc2IEw4NSA4NSBMODkgNzYgTDkzIDg1IEw5NyA3NiBMMTAxIDg1IEwxMDUgNzYgTDEwMiA3NiBMMTAyIDcyIEw1OCA3MiBaIiBmaWxsPSIjRDg3ODNBIi8+PHBhdGggZD0iTTY2IDU2IEw1MiA0OCBMNjYgNjQgWiIgZmlsbD0iI0UyQjM4RiIvPjxwYXRoIGQ9Ik05NCA1NiBMMTA4IDQ4IEw5NCA2NCBaIiBmaWxsPSIjRTJCMzhGIi8+PGNpcmNsZSBjeD0iODAiIGN5PSI1OCIgcj0iMTUiIGZpbGw9IiNFMkIzOEYiLz48cGF0aCBkPSJNNzEgNTIgbDUgMyBsLTUgMyBNODkgNTIgbC01IDMgbDUgMyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMkIyQTI4IiBzdHJva2Utd2lkdGg9IjIuMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PGVsbGlwc2UgY3g9IjcwIiBjeT0iNjMiIHJ4PSI0IiByeT0iMi41IiBmaWxsPSIjRTg5MDdGIiBvcGFjaXR5PSIuOCIvPjxlbGxpcHNlIGN4PSI5MCIgY3k9IjYzIiByeD0iNCIgcnk9IjIuNSIgZmlsbD0iI0U4OTA3RiIgb3BhY2l0eT0iLjgiLz48Y2lyY2xlIGN4PSI4MCIgY3k9IjYxIiByPSIyLjYiIGZpbGw9IiNEOThDNzgiLz48cGF0aCBkPSJNNzUgNjYgcTUgNCAxMCAwIiBmaWxsPSJub25lIiBzdHJva2U9IiMyQjJBMjgiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTY0IDQ4IFE3MCAxNCAxMDQgMTIgUTg0IDI4IDk2IDQ4IFoiIGZpbGw9IiM0RTdBNUYiLz48cmVjdCB4PSI2MiIgeT0iNDQiIHdpZHRoPSIzNiIgaGVpZ2h0PSI3IiByeD0iMy41IiBmaWxsPSIjRDg3ODNBIi8+PGNpcmNsZSBjeD0iMTA1IiBjeT0iMTIiIHI9IjUiIGZpbGw9IiNDOUIyN0MiLz48cGF0aCBkPSJNMTEyIDUwIHEtNCA3IDAgMTAgcTQgLTMgMCAtMTAiIGZpbGw9IiM3RkIyRDYiLz48cGF0aCBkPSJNMjggNzIgbC02IC0zIE0zMCA2MyBsLTQgLTUgTTEzMiA3MiBsNiAtMyBNMTMwIDYzIGw0IC01IiBzdHJva2U9IiNDOTlBNzgiIHN0cm9rZS13aWR0aD0iMi4yIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4=',
+    recovery: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNjAgMTYwIj48ZWxsaXBzZSBjeD0iODAiIGN5PSIxNDYiIHJ4PSI0NiIgcnk9IjQiIGZpbGw9IiMwMDAiIG9wYWNpdHk9Ii4wOCIvPjxwYXRoIGQ9Ik00OCAxMjggUTgwIDE0NCAxMTIgMTI4IFExMTggMTQwIDEwMiAxNDIgTDU4IDE0MiBRNDIgMTQwIDQ4IDEyOCBaIiBmaWxsPSIjMkY0QTNBIi8+PHBhdGggZD0iTTY2IDEzOCBRNTggMTMxIDQ4IDEzNiBxLTUgLTIgLTQgLTciIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJGNEEzQSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNOTQgMTM4IFExMDIgMTMxIDExMiAxMzYgcTUgLTIgNCAtNyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMkY0QTNBIiBzdHJva2Utd2lkdGg9IjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxwYXRoIGQ9Ik01OCAxMDQgUTQ2IDExNiA1NiAxMjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzRFN0E1RiIgc3Ryb2tlLXdpZHRoPSIxMSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PGNpcmNsZSBjeD0iNTciIGN5PSIxMjciIHI9IjYuNSIgZmlsbD0iI0UyQjM4RiIvPjxwYXRoIGQ9Ik0xMDIgMTA0IFExMTQgMTE2IDEwNCAxMjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzRFN0E1RiIgc3Ryb2tlLXdpZHRoPSIxMSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PGNpcmNsZSBjeD0iMTAzIiBjeT0iMTI3IiByPSI2LjUiIGZpbGw9IiNFMkIzOEYiLz48Y2lyY2xlIGN4PSI4MCIgY3k9IjEwNiIgcj0iMjYiIGZpbGw9IiM0RTdBNUYiLz48cmVjdCB4PSI1NiIgeT0iMTEyIiB3aWR0aD0iNDgiIGhlaWdodD0iNiIgZmlsbD0iIzJGNEEzQSIvPjxwYXRoIGQ9Ik01OCA4NCBMNjEgOTMgTDY1IDg0IEw2OSA5MyBMNzMgODQgTDc3IDkzIEw4MSA4NCBMODUgOTMgTDg5IDg0IEw5MyA5MyBMOTcgODQgTDEwMSA5MyBMMTA1IDg0IEwxMDIgODQgTDEwMiA4MCBMNTggODAgWiIgZmlsbD0iIzhFODRDNCIvPjxwYXRoIGQ9Ik02NiA2NCBMNTIgNTYgTDY2IDcyIFoiIGZpbGw9IiNFMkIzOEYiLz48cGF0aCBkPSJNOTQgNjQgTDEwOCA1NiBMOTQgNzIgWiIgZmlsbD0iI0UyQjM4RiIvPjxjaXJjbGUgY3g9IjgwIiBjeT0iNjYiIHI9IjE1IiBmaWxsPSIjRTJCMzhGIi8+PHBhdGggZD0iTTcwLjUgNjMgcTMuNSAzIDcgMCBNODIuNSA2MyBxMy41IDMgNyAwIiBmaWxsPSJub25lIiBzdHJva2U9IiMyQjJBMjgiIHN0cm9rZS13aWR0aD0iMi4zIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48ZWxsaXBzZSBjeD0iNzAiIGN5PSI3MSIgcng9IjQiIHJ5PSIyLjUiIGZpbGw9IiNFODkwN0YiIG9wYWNpdHk9Ii44Ii8+PGVsbGlwc2UgY3g9IjkwIiBjeT0iNzEiIHJ4PSI0IiByeT0iMi41IiBmaWxsPSIjRTg5MDdGIiBvcGFjaXR5PSIuOCIvPjxjaXJjbGUgY3g9IjgwIiBjeT0iNjkiIHI9IjIuNiIgZmlsbD0iI0Q5OEM3OCIvPjxwYXRoIGQ9Ik03NSA3NCBxNSA0IDEwIDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJCMkEyOCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNjQgNTYgUTQ4IDIyIDgyIDIwIFE2MiAzNiA5NiA1NiBaIiBmaWxsPSIjNEU3QTVGIi8+PHJlY3QgeD0iNjIiIHk9IjUyIiB3aWR0aD0iMzYiIGhlaWdodD0iNyIgcng9IjMuNSIgZmlsbD0iIzhFODRDNCIvPjxjaXJjbGUgY3g9IjgzIiBjeT0iMjAiIHI9IjUiIGZpbGw9IiNDOUIyN0MiLz48cGF0aCBkPSJNMTIyIDU2IHE2IC00IDEyIDAgTTEyNiA0NiBxNSAtMyAxMCAwIE0yNCA2MiBxNiAtNCAxMiAwIiBmaWxsPSJub25lIiBzdHJva2U9IiM4RTg2QjgiIHN0cm9rZS13aWR0aD0iMi4yIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4=',
+  };
+  // Exercise illustrations (stick-figure elves, decided 15 Nov): all exercises of day 1, both modes, 2 images each.
+  const ART_EX = {"plank": [{"src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMTcwIj48ZWxsaXBzZSBjeD0iMTAwIiBjeT0iMTUwIiByeD0iNjQiIHJ5PSI0IiBmaWxsPSIjMDAwIiBvcGFjaXR5PSIuMDgiLz48cGF0aCBkPSJNOTYgMTE0IEw5MCAxNDAgTDYyIDE0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMzY1NzQ0IiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMDAgMTE0IEw5NCAxNDAgTDY2IDE0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNEU3QTVGIiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05OCAxMTQgTDEzMiAxMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzRFN0E1RiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNMTMwIDExMiBMMTMwIDE0MCBMMTU2IDE0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMzY1NzQ0IiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMzQgMTEyIEwxMzQgMTQwIEwxNjAgMTQwIiBmaWxsPSJub25lIiBzdHJva2U9IiM0RTdBNUYiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PGcgdHJhbnNmb3JtPSJyb3RhdGUoMCAxMzggMTA2KSI+PHJlY3QgeD0iMTI4IiB5PSIxMDIiIHdpZHRoPSIyMCIgaGVpZ2h0PSI4IiByeD0iNCIgZmlsbD0iI0Q4NzgzQSIvPjxwYXRoIGQ9Ik0xMzQgMTA4IGwtNSAxMiIgc3Ryb2tlPSIjRDg3ODNBIiBzdHJva2Utd2lkdGg9IjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48ZyB0cmFuc2Zvcm09InJvdGF0ZSg4IDE1MiA5NikiPjxwYXRoIGQ9Ik0xNDAgOTUgTDEyNiA4NyBMMTQwIDEwMiBaIiBmaWxsPSIjRTJCMzhGIi8+PGNpcmNsZSBjeD0iMTUyIiBjeT0iOTYiIHI9IjE1IiBmaWxsPSIjRTJCMzhGIi8+PGNpcmNsZSBjeD0iMTU2IiBjeT0iOTMiIHI9IjIuMyIgZmlsbD0iIzJCMkEyOCIvPjxjaXJjbGUgY3g9IjE2NCIgY3k9IjkzIiByPSIyLjMiIGZpbGw9IiMyQjJBMjgiLz48ZWxsaXBzZSBjeD0iMTYyIiBjeT0iMTAxIiByeD0iMy4yIiByeT0iMi4yIiBmaWxsPSIjRTg5MDdGIiBvcGFjaXR5PSIuOCIvPjxjaXJjbGUgY3g9IjE2NyIgY3k9Ijk4IiByPSIyLjYiIGZpbGw9IiNEOThDNzgiLz48cGF0aCBkPSJNMTU2IDEwNSBxNCAzIDggMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMkIyQTI4IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xNjYgODUgUTE0NiA1MiAxMTggNTYgUTEzOCA2NiAxMzggODYgWiIgZmlsbD0iIzRFN0E1RiIvPjxyZWN0IHg9IjEzNSIgeT0iODEiIHdpZHRoPSIzNCIgaGVpZ2h0PSI3IiByeD0iMy41IiBmaWxsPSIjRDg3ODNBIi8+PGNpcmNsZSBjeD0iMTE3IiBjeT0iNTYiIHI9IjUiIGZpbGw9IiNDOUIyN0MiLz48L2c+PC9zdmc+", "alt": {"en": "Step 1: forearms under the shoulders, knees on the floor", "de": "Schritt 1: Unterarme unter den Schultern, Knie am Boden"}}, {"src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMTcwIj48ZWxsaXBzZSBjeD0iMTAwIiBjeT0iMTUwIiByeD0iNzIiIHJ5PSI0IiBmaWxsPSIjMDAwIiBvcGFjaXR5PSIuMDgiLz48cGF0aCBkPSJNODggMTIyIEwzOCAxMzgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzM2NTc0NCIgc3Ryb2tlLXdpZHRoPSI4IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNMzggMTM4IGwtMiAtNSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMzY1NzQ0IiBzdHJva2Utd2lkdGg9IjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05MCAxMjQgTDQyIDE0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNEU3QTVGIiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik00MiAxNDAgbC0yIC01IiBmaWxsPSJub25lIiBzdHJva2U9IiM0RTdBNUYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTg4IDEyMiBMMTMyIDExMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNEU3QTVGIiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMzAgMTEyIEwxMzAgMTQwIEwxNTYgMTQwIiBmaWxsPSJub25lIiBzdHJva2U9IiMzNjU3NDQiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTEzNCAxMTIgTDEzNCAxNDAgTDE2MCAxNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzRFN0E1RiIgc3Ryb2tlLXdpZHRoPSI4IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48ZyB0cmFuc2Zvcm09InJvdGF0ZSgtMTQgMTM4IDEwNikiPjxyZWN0IHg9IjEyOCIgeT0iMTAyIiB3aWR0aD0iMjAiIGhlaWdodD0iOCIgcng9IjQiIGZpbGw9IiNEODc4M0EiLz48cGF0aCBkPSJNMTM0IDEwOCBsLTUgMTIiIHN0cm9rZT0iI0Q4NzgzQSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L2c+PGcgdHJhbnNmb3JtPSJyb3RhdGUoMCAxNTIgOTYpIj48cGF0aCBkPSJNMTQwIDk1IEwxMjYgODcgTDE0MCAxMDIgWiIgZmlsbD0iI0UyQjM4RiIvPjxjaXJjbGUgY3g9IjE1MiIgY3k9Ijk2IiByPSIxNSIgZmlsbD0iI0UyQjM4RiIvPjxwYXRoIGQ9Ik0xNTMgOTAgbDUgMyBsLTUgMyBNMTY3IDkwIGwtNSAzIGw1IDMiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJCMkEyOCIgc3Ryb2tlLXdpZHRoPSIyLjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxlbGxpcHNlIGN4PSIxNjIiIGN5PSIxMDEiIHJ4PSIzLjIiIHJ5PSIyLjIiIGZpbGw9IiNFODkwN0YiIG9wYWNpdHk9Ii44Ii8+PGNpcmNsZSBjeD0iMTY3IiBjeT0iOTgiIHI9IjIuNiIgZmlsbD0iI0Q5OEM3OCIvPjxwYXRoIGQ9Ik0xNTYgMTA1IHE0IDMgOCAwIiBmaWxsPSJub25lIiBzdHJva2U9IiMyQjJBMjgiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTE2NiA4NSBRMTQ2IDUyIDExOCA1NiBRMTM4IDY2IDEzOCA4NiBaIiBmaWxsPSIjNEU3QTVGIi8+PHJlY3QgeD0iMTM1IiB5PSI4MSIgd2lkdGg9IjM0IiBoZWlnaHQ9IjciIHJ4PSIzLjUiIGZpbGw9IiNEODc4M0EiLz48Y2lyY2xlIGN4PSIxMTciIGN5PSI1NiIgcj0iNSIgZmlsbD0iI0M5QjI3QyIvPjwvZz48cGF0aCBkPSJNMzYgMTI0IEwxNDAgOTYiIHN0cm9rZT0iI0M5OUE3OCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtZGFzaGFycmF5PSIzIDUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xNzYgNzQgcS00IDcgMCAxMCBxNCAtMyAwIC0xMCIgZmlsbD0iIzdGQjJENiIvPjwvc3ZnPg==", "alt": {"en": "Step 2: lift the knees, body in one line from head to heels, keep breathing", "de": "Schritt 2: Knie anheben, K\u00f6rper in einer Linie von Kopf bis Fersen, weiteratmen"}}], "march": [{"src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMTcwIj48ZWxsaXBzZSBjeD0iMTAwIiBjeT0iMTUwIiByeD0iMzAiIHJ5PSI0IiBmaWxsPSIjMDAwIiBvcGFjaXR5PSIuMDgiLz48cGF0aCBkPSJNOTggMTA2IEw5OCAxNDIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzM2NTc0NCIgc3Ryb2tlLXdpZHRoPSI4IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNOTggMTQyIGw5IDAgcTQgMCAzIC01IiBmaWxsPSJub25lIiBzdHJva2U9IiMzNjU3NDQiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTEwMiAxMDYgTDEyNCAxMDAgTDEyMCAxMjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzRFN0E1RiIgc3Ryb2tlLXdpZHRoPSI4IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNMTIwIDEyOCBsOSAwIHE0IDAgMyAtNSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNEU3QTVGIiBzdHJva2Utd2lkdGg9IjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMDAgMTA2IEwxMDAgNzIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzRFN0E1RiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNMTAwIDc4IFE4NiA5MiA4NCAxMDQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzM2NTc0NCIgc3Ryb2tlLXdpZHRoPSI4IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNMTAwIDc4IFExMTYgODQgMTIwIDcyIiBmaWxsPSJub25lIiBzdHJva2U9IiM0RTdBNUYiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PGcgdHJhbnNmb3JtPSJyb3RhdGUoMCAxMDEgNzApIj48cmVjdCB4PSI5MSIgeT0iNjYiIHdpZHRoPSIyMCIgaGVpZ2h0PSI4IiByeD0iNCIgZmlsbD0iI0Q4NzgzQSIvPjxwYXRoIGQ9Ik05NyA3MiBsLTUgMTIiIHN0cm9rZT0iI0Q4NzgzQSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L2c+PGcgdHJhbnNmb3JtPSJyb3RhdGUoMCAxMDQgNTIpIj48cGF0aCBkPSJNOTIgNTEgTDc4IDQzIEw5MiA1OCBaIiBmaWxsPSIjRTJCMzhGIi8+PGNpcmNsZSBjeD0iMTA0IiBjeT0iNTIiIHI9IjE1IiBmaWxsPSIjRTJCMzhGIi8+PGNpcmNsZSBjeD0iMTA4IiBjeT0iNDkiIHI9IjIuMyIgZmlsbD0iIzJCMkEyOCIvPjxjaXJjbGUgY3g9IjExNiIgY3k9IjQ5IiByPSIyLjMiIGZpbGw9IiMyQjJBMjgiLz48ZWxsaXBzZSBjeD0iMTE0IiBjeT0iNTciIHJ4PSIzLjIiIHJ5PSIyLjIiIGZpbGw9IiNFODkwN0YiIG9wYWNpdHk9Ii44Ii8+PGNpcmNsZSBjeD0iMTE5IiBjeT0iNTQiIHI9IjIuNiIgZmlsbD0iI0Q5OEM3OCIvPjxwYXRoIGQ9Ik0xMDggNjEgcTQgMyA4IDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJCMkEyOCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMTE4IDQxIFE5OCA4IDcwIDEyIFE5MCAyMiA5MCA0MiBaIiBmaWxsPSIjNEU3QTVGIi8+PHJlY3QgeD0iODciIHk9IjM3IiB3aWR0aD0iMzQiIGhlaWdodD0iNyIgcng9IjMuNSIgZmlsbD0iI0Q4NzgzQSIvPjxjaXJjbGUgY3g9IjY5IiBjeT0iMTIiIHI9IjUiIGZpbGw9IiNDOUIyN0MiLz48L2c+PC9zdmc+", "alt": {"en": "Step 1: lift one knee high, opposite arm forward", "de": "Schritt 1: ein Knie hoch, Gegenarm nach vorn"}}, {"src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMTcwIj48ZWxsaXBzZSBjeD0iMTAwIiBjeT0iMTUwIiByeD0iMzAiIHJ5PSI0IiBmaWxsPSIjMDAwIiBvcGFjaXR5PSIuMDgiLz48cGF0aCBkPSJNOTggMTA2IEwxMjAgMTAwIEwxMTYgMTI4IiBmaWxsPSJub25lIiBzdHJva2U9IiMzNjU3NDQiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTExNiAxMjggbDkgMCBxNCAwIDMgLTUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzM2NTc0NCIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNMTAyIDEwNiBMMTAyIDE0MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNEU3QTVGIiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMDIgMTQyIGw5IDAgcTQgMCAzIC01IiBmaWxsPSJub25lIiBzdHJva2U9IiM0RTdBNUYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTEwMCAxMDYgTDEwMCA3MiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNEU3QTVGIiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMDAgNzggUTExNiA4NCAxMjAgNzIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzM2NTc0NCIgc3Ryb2tlLXdpZHRoPSI4IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNMTAwIDc4IFE4NiA5MiA4NCAxMDQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzRFN0E1RiIgc3Ryb2tlLXdpZHRoPSI4IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48ZyB0cmFuc2Zvcm09InJvdGF0ZSgwIDEwMSA3MCkiPjxyZWN0IHg9IjkxIiB5PSI2NiIgd2lkdGg9IjIwIiBoZWlnaHQ9IjgiIHJ4PSI0IiBmaWxsPSIjRDg3ODNBIi8+PHBhdGggZD0iTTk3IDcyIGwtNSAxMiIgc3Ryb2tlPSIjRDg3ODNBIiBzdHJva2Utd2lkdGg9IjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48ZyB0cmFuc2Zvcm09InJvdGF0ZSgwIDEwNCA1MikiPjxwYXRoIGQ9Ik05MiA1MSBMNzggNDMgTDkyIDU4IFoiIGZpbGw9IiNFMkIzOEYiLz48Y2lyY2xlIGN4PSIxMDQiIGN5PSI1MiIgcj0iMTUiIGZpbGw9IiNFMkIzOEYiLz48cGF0aCBkPSJNMTA1IDQ2IGw1IDMgbC01IDMgTTExOSA0NiBsLTUgMyBsNSAzIiBmaWxsPSJub25lIiBzdHJva2U9IiMyQjJBMjgiIHN0cm9rZS13aWR0aD0iMi4yIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48ZWxsaXBzZSBjeD0iMTE0IiBjeT0iNTciIHJ4PSIzLjIiIHJ5PSIyLjIiIGZpbGw9IiNFODkwN0YiIG9wYWNpdHk9Ii44Ii8+PGNpcmNsZSBjeD0iMTE5IiBjeT0iNTQiIHI9IjIuNiIgZmlsbD0iI0Q5OEM3OCIvPjxwYXRoIGQ9Ik0xMDggNjEgcTQgMyA4IDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJCMkEyOCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMTE4IDQxIFE5OCA4IDcwIDEyIFE5MCAyMiA5MCA0MiBaIiBmaWxsPSIjNEU3QTVGIi8+PHJlY3QgeD0iODciIHk9IjM3IiB3aWR0aD0iMzQiIGhlaWdodD0iNyIgcng9IjMuNSIgZmlsbD0iI0Q4NzgzQSIvPjxjaXJjbGUgY3g9IjY5IiBjeT0iMTIiIHI9IjUiIGZpbGw9IiNDOUIyN0MiLz48L2c+PHBhdGggZD0iTTEyOCAzNCBxLTQgNyAwIDEwIHE0IC0zIDAgLTEwIiBmaWxsPSIjN0ZCMkQ2Ii8+PHBhdGggZD0iTTE0MCAxMzIgcTggLTQgMCAtMTAgTTE0NiAxNDAgcTEwIC02IDAgLTE2IiBmaWxsPSJub25lIiBzdHJva2U9IiNDOTlBNzgiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PC9zdmc+", "alt": {"en": "Step 2: switch sides, march on the spot without jumping", "de": "Schritt 2: Seite wechseln, auf der Stelle marschieren, ohne zu springen"}}], "squat": [{"src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMTcwIj48ZWxsaXBzZSBjeD0iMTAwIiBjeT0iMTUwIiByeD0iMzAiIHJ5PSI0IiBmaWxsPSIjMDAwIiBvcGFjaXR5PSIuMDgiLz48cGF0aCBkPSJNOTggMTA2IEw5NiAxNDIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzM2NTc0NCIgc3Ryb2tlLXdpZHRoPSI4IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNOTYgMTQyIGw5IDAgcTQgMCAzIC01IiBmaWxsPSJub25lIiBzdHJva2U9IiMzNjU3NDQiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTEwMiAxMDYgTDEwNCAxNDIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzRFN0E1RiIgc3Ryb2tlLXdpZHRoPSI4IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNMTA0IDE0MiBsOSAwIHE0IDAgMyAtNSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNEU3QTVGIiBzdHJva2Utd2lkdGg9IjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMDAgMTA2IEwxMDAgNzIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzRFN0E1RiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNMTAwIDc4IFE5NCA5NCAxMDQgMTAyIiBmaWxsPSJub25lIiBzdHJva2U9IiM0RTdBNUYiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PGcgdHJhbnNmb3JtPSJyb3RhdGUoMCAxMDEgNzApIj48cmVjdCB4PSI5MSIgeT0iNjYiIHdpZHRoPSIyMCIgaGVpZ2h0PSI4IiByeD0iNCIgZmlsbD0iI0Q4NzgzQSIvPjxwYXRoIGQ9Ik05NyA3MiBsLTUgMTIiIHN0cm9rZT0iI0Q4NzgzQSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L2c+PGcgdHJhbnNmb3JtPSJyb3RhdGUoMCAxMDQgNTIpIj48cGF0aCBkPSJNOTIgNTEgTDc4IDQzIEw5MiA1OCBaIiBmaWxsPSIjRTJCMzhGIi8+PGNpcmNsZSBjeD0iMTA0IiBjeT0iNTIiIHI9IjE1IiBmaWxsPSIjRTJCMzhGIi8+PGNpcmNsZSBjeD0iMTA4IiBjeT0iNDkiIHI9IjIuMyIgZmlsbD0iIzJCMkEyOCIvPjxjaXJjbGUgY3g9IjExNiIgY3k9IjQ5IiByPSIyLjMiIGZpbGw9IiMyQjJBMjgiLz48ZWxsaXBzZSBjeD0iMTE0IiBjeT0iNTciIHJ4PSIzLjIiIHJ5PSIyLjIiIGZpbGw9IiNFODkwN0YiIG9wYWNpdHk9Ii44Ii8+PGNpcmNsZSBjeD0iMTE5IiBjeT0iNTQiIHI9IjIuNiIgZmlsbD0iI0Q5OEM3OCIvPjxwYXRoIGQ9Ik0xMDggNjEgcTQgMyA4IDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJCMkEyOCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMTE4IDQxIFE5OCA4IDcwIDEyIFE5MCAyMiA5MCA0MiBaIiBmaWxsPSIjNEU3QTVGIi8+PHJlY3QgeD0iODciIHk9IjM3IiB3aWR0aD0iMzQiIGhlaWdodD0iNyIgcng9IjMuNSIgZmlsbD0iI0Q4NzgzQSIvPjxjaXJjbGUgY3g9IjY5IiBjeT0iMTIiIHI9IjUiIGZpbGw9IiNDOUIyN0MiLz48L2c+PC9zdmc+", "alt": {"en": "Step 1: stand tall, feet hip-width apart", "de": "Schritt 1: aufrecht stehen, F\u00fc\u00dfe h\u00fcftbreit"}}, {"src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMTcwIj48ZWxsaXBzZSBjeD0iMTA0IiBjeT0iMTUwIiByeD0iNDQiIHJ5PSI0IiBmaWxsPSIjMDAwIiBvcGFjaXR5PSIuMDgiLz48cGF0aCBkPSJNODIgMTE0IEwxMTIgMTE0IEwxMDggMTQyIiBmaWxsPSJub25lIiBzdHJva2U9IiMzNjU3NDQiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTEwOCAxNDIgbDkgMCBxNCAwIDMgLTUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzM2NTc0NCIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNODQgMTE4IEwxMTggMTE4IEwxMTQgMTQyIiBmaWxsPSJub25lIiBzdHJva2U9IiM0RTdBNUYiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTExNCAxNDIgbDkgMCBxNCAwIDMgLTUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzRFN0E1RiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNODMgMTE2IEwxMDIgODQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzRFN0E1RiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNMTAyIDg4IFExMjQgOTQgMTQyIDg2IiBmaWxsPSJub25lIiBzdHJva2U9IiM0RTdBNUYiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PGcgdHJhbnNmb3JtPSJyb3RhdGUoLTMwIDEwNCA4MCkiPjxyZWN0IHg9Ijk0IiB5PSI3NiIgd2lkdGg9IjIwIiBoZWlnaHQ9IjgiIHJ4PSI0IiBmaWxsPSIjRDg3ODNBIi8+PHBhdGggZD0iTTEwMCA4MiBsLTUgMTIiIHN0cm9rZT0iI0Q4NzgzQSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L2c+PGcgdHJhbnNmb3JtPSJyb3RhdGUoMTAgMTE0IDY0KSI+PHBhdGggZD0iTTEwMiA2MyBMODggNTUgTDEwMiA3MCBaIiBmaWxsPSIjRTJCMzhGIi8+PGNpcmNsZSBjeD0iMTE0IiBjeT0iNjQiIHI9IjE1IiBmaWxsPSIjRTJCMzhGIi8+PHBhdGggZD0iTTExNSA1OCBsNSAzIGwtNSAzIE0xMjkgNTggbC01IDMgbDUgMyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMkIyQTI4IiBzdHJva2Utd2lkdGg9IjIuMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PGVsbGlwc2UgY3g9IjEyNCIgY3k9IjY5IiByeD0iMy4yIiByeT0iMi4yIiBmaWxsPSIjRTg5MDdGIiBvcGFjaXR5PSIuOCIvPjxjaXJjbGUgY3g9IjEyOSIgY3k9IjY2IiByPSIyLjYiIGZpbGw9IiNEOThDNzgiLz48cGF0aCBkPSJNMTE4IDczIHE0IDMgOCAwIiBmaWxsPSJub25lIiBzdHJva2U9IiMyQjJBMjgiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTEyOCA1MyBRMTA4IDIwIDgwIDI0IFExMDAgMzQgMTAwIDU0IFoiIGZpbGw9IiM0RTdBNUYiLz48cmVjdCB4PSI5NyIgeT0iNDkiIHdpZHRoPSIzNCIgaGVpZ2h0PSI3IiByeD0iMy41IiBmaWxsPSIjRDg3ODNBIi8+PGNpcmNsZSBjeD0iNzkiIGN5PSIyNCIgcj0iNSIgZmlsbD0iI0M5QjI3QyIvPjwvZz48cGF0aCBkPSJNMTUwIDUwIHEtNCA3IDAgMTAgcTQgLTMgMCAtMTAiIGZpbGw9IiM3RkIyRDYiLz48cGF0aCBkPSJNNjAgOTQgTDYwIDExNiIgc3Ryb2tlPSIjQzk5QTc4IiBzdHJva2Utd2lkdGg9IjIuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTU1IDExMCBsNSA2IGw1IC02IiBmaWxsPSJub25lIiBzdHJva2U9IiNDOTlBNzgiIHN0cm9rZS13aWR0aD0iMi41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4=", "alt": {"en": "Step 2: sit back and down, chest up, then push back up", "de": "Schritt 2: Ges\u00e4\u00df nach hinten unten, Brust aufrecht, dann wieder hochdr\u00fccken"}}], "pushup": [{"src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMTcwIj48ZWxsaXBzZSBjeD0iMTAwIiBjeT0iMTUwIiByeD0iNjQiIHJ5PSI0IiBmaWxsPSIjMDAwIiBvcGFjaXR5PSIuMDgiLz48cGF0aCBkPSJNOTQgMTIyIEw3NCAxNDAgTDQ4IDE0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMzY1NzQ0IiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NiAxMjQgTDc4IDE0MCBMNTIgMTQwIiBmaWxsPSJub25lIiBzdHJva2U9IiM0RTdBNUYiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTk1IDEyMyBMMTM4IDEwMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNEU3QTVGIiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMzQgMTAyIEwxMzQgMTQwIiBmaWxsPSJub25lIiBzdHJva2U9IiMzNjU3NDQiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTE0MCAxMDIgUTE0NCAxMjAgMTQwIDE0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNEU3QTVGIiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxnIHRyYW5zZm9ybT0icm90YXRlKC0yNiAxNDIgOTgpIj48cmVjdCB4PSIxMzIiIHk9Ijk0IiB3aWR0aD0iMjAiIGhlaWdodD0iOCIgcng9IjQiIGZpbGw9IiNEODc4M0EiLz48cGF0aCBkPSJNMTM4IDEwMCBsLTUgMTIiIHN0cm9rZT0iI0Q4NzgzQSIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L2c+PGcgdHJhbnNmb3JtPSJyb3RhdGUoMTYgMTU2IDg2KSI+PHBhdGggZD0iTTE0NCA4NSBMMTMwIDc3IEwxNDQgOTIgWiIgZmlsbD0iI0UyQjM4RiIvPjxjaXJjbGUgY3g9IjE1NiIgY3k9Ijg2IiByPSIxNSIgZmlsbD0iI0UyQjM4RiIvPjxjaXJjbGUgY3g9IjE2MCIgY3k9IjgzIiByPSIyLjMiIGZpbGw9IiMyQjJBMjgiLz48Y2lyY2xlIGN4PSIxNjgiIGN5PSI4MyIgcj0iMi4zIiBmaWxsPSIjMkIyQTI4Ii8+PGVsbGlwc2UgY3g9IjE2NiIgY3k9IjkxIiByeD0iMy4yIiByeT0iMi4yIiBmaWxsPSIjRTg5MDdGIiBvcGFjaXR5PSIuOCIvPjxjaXJjbGUgY3g9IjE3MSIgY3k9Ijg4IiByPSIyLjYiIGZpbGw9IiNEOThDNzgiLz48cGF0aCBkPSJNMTYwIDk1IHE0IDMgOCAwIiBmaWxsPSJub25lIiBzdHJva2U9IiMyQjJBMjgiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTE3MCA3NSBRMTUwIDQyIDEyMiA0NiBRMTQyIDU2IDE0MiA3NiBaIiBmaWxsPSIjNEU3QTVGIi8+PHJlY3QgeD0iMTM5IiB5PSI3MSIgd2lkdGg9IjM0IiBoZWlnaHQ9IjciIHJ4PSIzLjUiIGZpbGw9IiNEODc4M0EiLz48Y2lyY2xlIGN4PSIxMjEiIGN5PSI0NiIgcj0iNSIgZmlsbD0iI0M5QjI3QyIvPjwvZz48L3N2Zz4=", "alt": {"en": "Step 1: hands under the shoulders, knees down (or on toes)", "de": "Schritt 1: H\u00e4nde unter den Schultern, Knie am Boden (oder auf den Zehen)"}}, {"src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMTcwIj48ZWxsaXBzZSBjeD0iMTAwIiBjeT0iMTUwIiByeD0iNjYiIHJ5PSI0IiBmaWxsPSIjMDAwIiBvcGFjaXR5PSIuMDgiLz48cGF0aCBkPSJNOTQgMTI4IEw3NCAxNDAgTDQ4IDE0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMzY1NzQ0IiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NiAxMzAgTDc4IDE0MCBMNTIgMTQwIiBmaWxsPSJub25lIiBzdHJva2U9IiM0RTdBNUYiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTk1IDEyOSBMMTMwIDEyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNEU3QTVGIiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMjQgMTI2IEwxMDQgMTA2IEwxMjAgMTQwIiBmaWxsPSJub25lIiBzdHJva2U9IiMzNjU3NDQiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTEyOCAxMjYgTDExMCAxMDQgTDEyNiAxNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzRFN0E1RiIgc3Ryb2tlLXdpZHRoPSI4IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48ZyB0cmFuc2Zvcm09InJvdGF0ZSgtOCAxMzYgMTIyKSI+PHJlY3QgeD0iMTI2IiB5PSIxMTgiIHdpZHRoPSIyMCIgaGVpZ2h0PSI4IiByeD0iNCIgZmlsbD0iI0Q4NzgzQSIvPjxwYXRoIGQ9Ik0xMzIgMTI0IGwtNSAxMiIgc3Ryb2tlPSIjRDg3ODNBIiBzdHJva2Utd2lkdGg9IjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48ZyB0cmFuc2Zvcm09InJvdGF0ZSg2IDE1NiAxMTQpIj48cGF0aCBkPSJNMTQ0IDExMyBMMTMwIDEwNSBMMTQ0IDEyMCBaIiBmaWxsPSIjRTJCMzhGIi8+PGNpcmNsZSBjeD0iMTU2IiBjeT0iMTE0IiByPSIxNSIgZmlsbD0iI0UyQjM4RiIvPjxwYXRoIGQ9Ik0xNTcgMTA4IGw1IDMgbC01IDMgTTE3MSAxMDggbC01IDMgbDUgMyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMkIyQTI4IiBzdHJva2Utd2lkdGg9IjIuMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PGVsbGlwc2UgY3g9IjE2NiIgY3k9IjExOSIgcng9IjMuMiIgcnk9IjIuMiIgZmlsbD0iI0U4OTA3RiIgb3BhY2l0eT0iLjgiLz48Y2lyY2xlIGN4PSIxNzEiIGN5PSIxMTYiIHI9IjIuNiIgZmlsbD0iI0Q5OEM3OCIvPjxwYXRoIGQ9Ik0xNjAgMTIzIHE0IDMgOCAwIiBmaWxsPSJub25lIiBzdHJva2U9IiMyQjJBMjgiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTE3MCAxMDMgUTE1MCA3MCAxMjIgNzQgUTE0MiA4NCAxNDIgMTA0IFoiIGZpbGw9IiM0RTdBNUYiLz48cmVjdCB4PSIxMzkiIHk9Ijk5IiB3aWR0aD0iMzQiIGhlaWdodD0iNyIgcng9IjMuNSIgZmlsbD0iI0Q4NzgzQSIvPjxjaXJjbGUgY3g9IjEyMSIgY3k9Ijc0IiByPSI1IiBmaWxsPSIjQzlCMjdDIi8+PC9nPjxwYXRoIGQ9Ik0xNzYgOTIgcS00IDcgMCAxMCBxNCAtMyAwIC0xMCIgZmlsbD0iIzdGQjJENiIvPjxwYXRoIGQ9Ik0xMTggOTIgTDExOCAxMTIiIHN0cm9rZT0iI0M5OUE3OCIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTMgMTA2IGw1IDYgbDUgLTYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0M5OUE3OCIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg==", "alt": {"en": "Step 2: lower the chest towards the floor, then push back up", "de": "Schritt 2: Brust Richtung Boden senken, dann wieder hochdr\u00fccken"}}], "child": [{"src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMTcwIj48ZWxsaXBzZSBjeD0iOTYiIGN5PSIxNTAiIHJ4PSI0NCIgcnk9IjQiIGZpbGw9IiMwMDAiIG9wYWNpdHk9Ii4wOCIvPjxwYXRoIGQ9Ik04MiAxMjggTDEwNCAxNDAgTDcwIDE0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMzY1NzQ0IiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik04NCAxMzAgTDEwNiAxNDEgTDcyIDE0MSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNEU3QTVGIiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik04NCAxMjggTDg2IDkyIiBmaWxsPSJub25lIiBzdHJva2U9IiM0RTdBNUYiIHN0cm9rZS13aWR0aD0iOSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTg2IDk4IFExMDAgMTEyIDk4IDEyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNEU3QTVGIiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxnIHRyYW5zZm9ybT0icm90YXRlKDAgODcgODgpIj48cmVjdCB4PSI3NyIgeT0iODQiIHdpZHRoPSIyMCIgaGVpZ2h0PSI4IiByeD0iNCIgZmlsbD0iIzhFODRDNCIvPjxwYXRoIGQ9Ik04MyA5MCBsLTUgMTIiIHN0cm9rZT0iIzhFODRDNCIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L2c+PGcgdHJhbnNmb3JtPSJyb3RhdGUoMCA5MCA3MCkiPjxwYXRoIGQ9Ik03OCA2OSBMNjQgNjEgTDc4IDc2IFoiIGZpbGw9IiNFMkIzOEYiLz48Y2lyY2xlIGN4PSI5MCIgY3k9IjcwIiByPSIxNSIgZmlsbD0iI0UyQjM4RiIvPjxwYXRoIGQ9Ik05MSA2NyBxMyAyLjUgNiAwIE05OSA2NyBxMyAyLjUgNiAwIiBmaWxsPSJub25lIiBzdHJva2U9IiMyQjJBMjgiIHN0cm9rZS13aWR0aD0iMi4yIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48ZWxsaXBzZSBjeD0iMTAwIiBjeT0iNzUiIHJ4PSIzLjIiIHJ5PSIyLjIiIGZpbGw9IiNFODkwN0YiIG9wYWNpdHk9Ii44Ii8+PGNpcmNsZSBjeD0iMTA1IiBjeT0iNzIiIHI9IjIuNiIgZmlsbD0iI0Q5OEM3OCIvPjxwYXRoIGQ9Ik05NCA3OSBxNCAzIDggMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMkIyQTI4IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMDQgNTkgUTg0IDI2IDU2IDMwIFE3NiA0MCA3NiA2MCBaIiBmaWxsPSIjNEU3QTVGIi8+PHJlY3QgeD0iNzMiIHk9IjU1IiB3aWR0aD0iMzQiIGhlaWdodD0iNyIgcng9IjMuNSIgZmlsbD0iIzhFODRDNCIvPjxjaXJjbGUgY3g9IjU1IiBjeT0iMzAiIHI9IjUiIGZpbGw9IiNDOUIyN0MiLz48L2c+PC9zdmc+", "alt": {"en": "Step 1: kneel, knees wide, sit back on your heels", "de": "Schritt 1: knien, Knie weit, Ges\u00e4\u00df auf die Fersen"}}, {"src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMTcwIj48ZWxsaXBzZSBjeD0iMTEwIiBjeT0iMTUwIiByeD0iNjYiIHJ5PSI0IiBmaWxsPSIjMDAwIiBvcGFjaXR5PSIuMDgiLz48cGF0aCBkPSJNNzggMTI2IEwxMDIgMTQwIEw2OCAxNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzM2NTc0NCIgc3Ryb2tlLXdpZHRoPSI4IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNODAgMTI4IEwxMDQgMTQxIEw3MCAxNDEiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzRFN0E1RiIgc3Ryb2tlLXdpZHRoPSI4IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNODAgMTI2IFExMDAgMTEyIDEyNCAxMjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzRFN0E1RiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNMTIyIDEyOCBRMTUwIDEzMCAxNzYgMTM2IiBmaWxsPSJub25lIiBzdHJva2U9IiMzNjU3NDQiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTEyNCAxMzAgUTE1MCAxMzYgMTc4IDE0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNEU3QTVGIiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxnIHRyYW5zZm9ybT0icm90YXRlKDQwIDEyOCAxMjYpIj48cmVjdCB4PSIxMTgiIHk9IjEyMiIgd2lkdGg9IjIwIiBoZWlnaHQ9IjgiIHJ4PSI0IiBmaWxsPSIjOEU4NEM0Ii8+PHBhdGggZD0iTTEyNCAxMjggbC01IDEyIiBzdHJva2U9IiM4RTg0QzQiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PC9nPjxnIHRyYW5zZm9ybT0icm90YXRlKDgwIDE0MCAxMjYpIj48cGF0aCBkPSJNMTI4IDEyNSBMMTE0IDExNyBMMTI4IDEzMiBaIiBmaWxsPSIjRTJCMzhGIi8+PGNpcmNsZSBjeD0iMTQwIiBjeT0iMTI2IiByPSIxNSIgZmlsbD0iI0UyQjM4RiIvPjxwYXRoIGQ9Ik0xNDEgMTIzIHEzIDIuNSA2IDAgTTE0OSAxMjMgcTMgMi41IDYgMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMkIyQTI4IiBzdHJva2Utd2lkdGg9IjIuMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PGVsbGlwc2UgY3g9IjE1MCIgY3k9IjEzMSIgcng9IjMuMiIgcnk9IjIuMiIgZmlsbD0iI0U4OTA3RiIgb3BhY2l0eT0iLjgiLz48Y2lyY2xlIGN4PSIxNTUiIGN5PSIxMjgiIHI9IjIuNiIgZmlsbD0iI0Q5OEM3OCIvPjxwYXRoIGQ9Ik0xNDQgMTM1IHE0IDMgOCAwIiBmaWxsPSJub25lIiBzdHJva2U9IiMyQjJBMjgiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTE1NCAxMTUgUTEzNCA4MiAxMDYgODYgUTEyNiA5NiAxMjYgMTE2IFoiIGZpbGw9IiM0RTdBNUYiLz48cmVjdCB4PSIxMjMiIHk9IjExMSIgd2lkdGg9IjM0IiBoZWlnaHQ9IjciIHJ4PSIzLjUiIGZpbGw9IiM4RTg0QzQiLz48Y2lyY2xlIGN4PSIxMDUiIGN5PSI4NiIgcj0iNSIgZmlsbD0iI0M5QjI3QyIvPjwvZz48cGF0aCBkPSJNNTIgMTA0IHE2IC00IDEyIDAgTTU2IDk0IHE1IC0zIDEwIDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzhFODZCOCIgc3Ryb2tlLXdpZHRoPSIyLjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==", "alt": {"en": "Step 2: fold forward, arms long, forehead down, breathe slowly", "de": "Schritt 2: nach vorn ablegen, Arme lang, Stirn ablegen, ruhig atmen"}}], "hamstring": [{"src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMTcwIj48ZWxsaXBzZSBjeD0iMTEwIiBjeT0iMTUwIiByeD0iNjQiIHJ5PSI0IiBmaWxsPSIjMDAwIiBvcGFjaXR5PSIuMDgiLz48cGF0aCBkPSJNODIgMTM4IEwxMDQgMTEyIEwxMDggMTQwIiBmaWxsPSJub25lIiBzdHJva2U9IiMzNjU3NDQiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTg0IDE0MCBMMTU2IDE0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNEU3QTVGIiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xNTYgMTQwIGwxIC05IiBmaWxsPSJub25lIiBzdHJva2U9IiM0RTdBNUYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTgyIDEzOCBMODIgMTAwIiBmaWxsPSJub25lIiBzdHJva2U9IiM0RTdBNUYiIHN0cm9rZS13aWR0aD0iOSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTgyIDEwNiBROTYgMTIwIDEwNiAxMjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzRFN0E1RiIgc3Ryb2tlLXdpZHRoPSI4IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48ZyB0cmFuc2Zvcm09InJvdGF0ZSgwIDgzIDk2KSI+PHJlY3QgeD0iNzMiIHk9IjkyIiB3aWR0aD0iMjAiIGhlaWdodD0iOCIgcng9IjQiIGZpbGw9IiM4RTg0QzQiLz48cGF0aCBkPSJNNzkgOTggbC01IDEyIiBzdHJva2U9IiM4RTg0QzQiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PC9nPjxnIHRyYW5zZm9ybT0icm90YXRlKDAgODYgNzgpIj48cGF0aCBkPSJNNzQgNzcgTDYwIDY5IEw3NCA4NCBaIiBmaWxsPSIjRTJCMzhGIi8+PGNpcmNsZSBjeD0iODYiIGN5PSI3OCIgcj0iMTUiIGZpbGw9IiNFMkIzOEYiLz48cGF0aCBkPSJNODcgNzUgcTMgMi41IDYgMCBNOTUgNzUgcTMgMi41IDYgMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMkIyQTI4IiBzdHJva2Utd2lkdGg9IjIuMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PGVsbGlwc2UgY3g9Ijk2IiBjeT0iODMiIHJ4PSIzLjIiIHJ5PSIyLjIiIGZpbGw9IiNFODkwN0YiIG9wYWNpdHk9Ii44Ii8+PGNpcmNsZSBjeD0iMTAxIiBjeT0iODAiIHI9IjIuNiIgZmlsbD0iI0Q5OEM3OCIvPjxwYXRoIGQ9Ik05MCA4NyBxNCAzIDggMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMkIyQTI4IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMDAgNjcgUTgwIDM0IDUyIDM4IFE3MiA0OCA3MiA2OCBaIiBmaWxsPSIjNEU3QTVGIi8+PHJlY3QgeD0iNjkiIHk9IjYzIiB3aWR0aD0iMzQiIGhlaWdodD0iNyIgcng9IjMuNSIgZmlsbD0iIzhFODRDNCIvPjxjaXJjbGUgY3g9IjUxIiBjeT0iMzgiIHI9IjUiIGZpbGw9IiNDOUIyN0MiLz48L2c+PC9zdmc+", "alt": {"en": "Step 1: sit tall, one leg long, the other foot in", "de": "Schritt 1: aufrecht sitzen, ein Bein lang, der andere Fu\u00df angestellt"}}, {"src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMTcwIj48ZWxsaXBzZSBjeD0iMTEwIiBjeT0iMTUwIiByeD0iNjQiIHJ5PSI0IiBmaWxsPSIjMDAwIiBvcGFjaXR5PSIuMDgiLz48cGF0aCBkPSJNODIgMTM4IEwxMDQgMTEyIEwxMDggMTQwIiBmaWxsPSJub25lIiBzdHJva2U9IiMzNjU3NDQiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTg0IDE0MCBMMTU2IDE0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNEU3QTVGIiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xNTYgMTQwIGwxIC05IiBmaWxsPSJub25lIiBzdHJva2U9IiM0RTdBNUYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTgyIDEzOCBMMTA4IDEwOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNEU3QTVGIiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMDYgMTEyIFExMjggMTI0IDE0NiAxMzAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzRFN0E1RiIgc3Ryb2tlLXdpZHRoPSI4IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48ZyB0cmFuc2Zvcm09InJvdGF0ZSg0MCAxMTAgMTA0KSI+PHJlY3QgeD0iMTAwIiB5PSIxMDAiIHdpZHRoPSIyMCIgaGVpZ2h0PSI4IiByeD0iNCIgZmlsbD0iIzhFODRDNCIvPjxwYXRoIGQ9Ik0xMDYgMTA2IGwtNSAxMiIgc3Ryb2tlPSIjOEU4NEM0IiBzdHJva2Utd2lkdGg9IjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48ZyB0cmFuc2Zvcm09InJvdGF0ZSg0MCAxMjIgOTYpIj48cGF0aCBkPSJNMTEwIDk1IEw5NiA4NyBMMTEwIDEwMiBaIiBmaWxsPSIjRTJCMzhGIi8+PGNpcmNsZSBjeD0iMTIyIiBjeT0iOTYiIHI9IjE1IiBmaWxsPSIjRTJCMzhGIi8+PHBhdGggZD0iTTEyMyA5MyBxMyAyLjUgNiAwIE0xMzEgOTMgcTMgMi41IDYgMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMkIyQTI4IiBzdHJva2Utd2lkdGg9IjIuMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PGVsbGlwc2UgY3g9IjEzMiIgY3k9IjEwMSIgcng9IjMuMiIgcnk9IjIuMiIgZmlsbD0iI0U4OTA3RiIgb3BhY2l0eT0iLjgiLz48Y2lyY2xlIGN4PSIxMzciIGN5PSI5OCIgcj0iMi42IiBmaWxsPSIjRDk4Qzc4Ii8+PHBhdGggZD0iTTEyNiAxMDUgcTQgMyA4IDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJCMkEyOCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMTM2IDg1IFExMTYgNTIgODggNTYgUTEwOCA2NiAxMDggODYgWiIgZmlsbD0iIzRFN0E1RiIvPjxyZWN0IHg9IjEwNSIgeT0iODEiIHdpZHRoPSIzNCIgaGVpZ2h0PSI3IiByeD0iMy41IiBmaWxsPSIjOEU4NEM0Ii8+PGNpcmNsZSBjeD0iODciIGN5PSI1NiIgcj0iNSIgZmlsbD0iI0M5QjI3QyIvPjwvZz48cGF0aCBkPSJNMTUwIDkyIHE2IC00IDEyIDAgTTE1NCA4MiBxNSAtMyAxMCAwIiBmaWxsPSJub25lIiBzdHJva2U9IiM4RTg2QjgiIHN0cm9rZS13aWR0aD0iMi4yIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4=", "alt": {"en": "Step 2: hinge forward from the hips until you feel a stretch, breathe", "de": "Schritt 2: aus der H\u00fcfte nach vorn neigen, bis du eine Dehnung sp\u00fcrst, atmen"}}], "figure4": [{"src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMTcwIj48ZWxsaXBzZSBjeD0iMTEyIiBjeT0iMTUwIiByeD0iNzAiIHJ5PSI0IiBmaWxsPSIjMDAwIiBvcGFjaXR5PSIuMDgiLz48cGF0aCBkPSJNMTM0IDEzOCBMMTUyIDEwOCBMMTcyIDE0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMzY1NzQ0IiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMzYgMTQwIEwxNTQgMTEwIEwxNzQgMTQxIiBmaWxsPSJub25lIiBzdHJva2U9IiM0RTdBNUYiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTg4IDEzOCBMMTM0IDEzOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNEU3QTVGIiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05MiAxMzYgUTEwNiAxMjQgMTIyIDEzMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNEU3QTVGIiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxnIHRyYW5zZm9ybT0icm90YXRlKDcwIDg2IDEzMikiPjxyZWN0IHg9Ijc2IiB5PSIxMjgiIHdpZHRoPSIyMCIgaGVpZ2h0PSI4IiByeD0iNCIgZmlsbD0iIzhFODRDNCIvPjxwYXRoIGQ9Ik04MiAxMzQgbC01IDEyIiBzdHJva2U9IiM4RTg0QzQiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PC9nPjxnIHRyYW5zZm9ybT0icm90YXRlKC02NSA3MCAxMjIpIj48cGF0aCBkPSJNNTggMTIxIEw0NCAxMTMgTDU4IDEyOCBaIiBmaWxsPSIjRTJCMzhGIi8+PGNpcmNsZSBjeD0iNzAiIGN5PSIxMjIiIHI9IjE1IiBmaWxsPSIjRTJCMzhGIi8+PHBhdGggZD0iTTcxIDExOSBxMyAyLjUgNiAwIE03OSAxMTkgcTMgMi41IDYgMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMkIyQTI4IiBzdHJva2Utd2lkdGg9IjIuMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PGVsbGlwc2UgY3g9IjgwIiBjeT0iMTI3IiByeD0iMy4yIiByeT0iMi4yIiBmaWxsPSIjRTg5MDdGIiBvcGFjaXR5PSIuOCIvPjxjaXJjbGUgY3g9Ijg1IiBjeT0iMTI0IiByPSIyLjYiIGZpbGw9IiNEOThDNzgiLz48cGF0aCBkPSJNNzQgMTMxIHE0IDMgOCAwIiBmaWxsPSJub25lIiBzdHJva2U9IiMyQjJBMjgiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTg0IDExMSBRNjQgNzggMzYgODIgUTU2IDkyIDU2IDExMiBaIiBmaWxsPSIjNEU3QTVGIi8+PHJlY3QgeD0iNTMiIHk9IjEwNyIgd2lkdGg9IjM0IiBoZWlnaHQ9IjciIHJ4PSIzLjUiIGZpbGw9IiM4RTg0QzQiLz48Y2lyY2xlIGN4PSIzNSIgY3k9IjgyIiByPSI1IiBmaWxsPSIjQzlCMjdDIi8+PC9nPjwvc3ZnPg==", "alt": {"en": "Step 1: lie on your back, knees bent, feet on the floor", "de": "Schritt 1: auf den R\u00fccken legen, Knie gebeugt, F\u00fc\u00dfe am Boden"}}, {"src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMTcwIj48ZWxsaXBzZSBjeD0iMTEyIiBjeT0iMTUwIiByeD0iNzAiIHJ5PSI0IiBmaWxsPSIjMDAwIiBvcGFjaXR5PSIuMDgiLz48cGF0aCBkPSJNMTM0IDEzOCBMMTUyIDEwNiBMMTcyIDE0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMzY1NzQ0IiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMzYgMTQwIEwxNDAgMTEwIEwxNTggMTA0IiBmaWxsPSJub25lIiBzdHJva2U9IiM0RTdBNUYiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTg4IDEzOCBMMTM0IDEzOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNEU3QTVGIiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05MiAxMzYgUTExOCAxMTQgMTQ2IDExMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNEU3QTVGIiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxnIHRyYW5zZm9ybT0icm90YXRlKDcwIDg2IDEzMikiPjxyZWN0IHg9Ijc2IiB5PSIxMjgiIHdpZHRoPSIyMCIgaGVpZ2h0PSI4IiByeD0iNCIgZmlsbD0iIzhFODRDNCIvPjxwYXRoIGQ9Ik04MiAxMzQgbC01IDEyIiBzdHJva2U9IiM4RTg0QzQiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PC9nPjxnIHRyYW5zZm9ybT0icm90YXRlKC02NSA3MCAxMjIpIj48cGF0aCBkPSJNNTggMTIxIEw0NCAxMTMgTDU4IDEyOCBaIiBmaWxsPSIjRTJCMzhGIi8+PGNpcmNsZSBjeD0iNzAiIGN5PSIxMjIiIHI9IjE1IiBmaWxsPSIjRTJCMzhGIi8+PHBhdGggZD0iTTcxIDExOSBxMyAyLjUgNiAwIE03OSAxMTkgcTMgMi41IDYgMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMkIyQTI4IiBzdHJva2Utd2lkdGg9IjIuMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PGVsbGlwc2UgY3g9IjgwIiBjeT0iMTI3IiByeD0iMy4yIiByeT0iMi4yIiBmaWxsPSIjRTg5MDdGIiBvcGFjaXR5PSIuOCIvPjxjaXJjbGUgY3g9Ijg1IiBjeT0iMTI0IiByPSIyLjYiIGZpbGw9IiNEOThDNzgiLz48cGF0aCBkPSJNNzQgMTMxIHE0IDMgOCAwIiBmaWxsPSJub25lIiBzdHJva2U9IiMyQjJBMjgiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTg0IDExMSBRNjQgNzggMzYgODIgUTU2IDkyIDU2IDExMiBaIiBmaWxsPSIjNEU3QTVGIi8+PHJlY3QgeD0iNTMiIHk9IjEwNyIgd2lkdGg9IjM0IiBoZWlnaHQ9IjciIHJ4PSIzLjUiIGZpbGw9IiM4RTg0QzQiLz48Y2lyY2xlIGN4PSIzNSIgY3k9IjgyIiByPSI1IiBmaWxsPSIjQzlCMjdDIi8+PC9nPjxwYXRoIGQ9Ik0zMCAxMDAgcTYgLTQgMTIgMCBNMzQgOTAgcTUgLTMgMTAgMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOEU4NkI4IiBzdHJva2Utd2lkdGg9IjIuMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PC9zdmc+", "alt": {"en": "Step 2: cross one ankle over the other knee and gently draw the legs in, then switch", "de": "Schritt 2: einen Kn\u00f6chel aufs andere Knie legen, Beine sanft heranziehen, dann wechseln"}}], "cat-cow": [{"src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMTcwIj48ZWxsaXBzZSBjeD0iMTA0IiBjeT0iMTUwIiByeD0iNTQiIHJ5PSI0IiBmaWxsPSIjMDAwIiBvcGFjaXR5PSIuMDgiLz48cGF0aCBkPSJNODIgMTEyIEw4MCAxNDAgTDU0IDE0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMzY1NzQ0IiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik04NiAxMTIgTDg0IDE0MCBMNTggMTQwIiBmaWxsPSJub25lIiBzdHJva2U9IiM0RTdBNUYiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTg0IDExMiBRMTA0IDEyOCAxMjYgMTEwIiBmaWxsPSJub25lIiBzdHJva2U9IiM0RTdBNUYiIHN0cm9rZS13aWR0aD0iOSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTEyNCAxMTIgTDEyNCAxNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzM2NTc0NCIgc3Ryb2tlLXdpZHRoPSI4IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNMTI4IDExMiBMMTI4IDE0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNEU3QTVGIiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxnIHRyYW5zZm9ybT0icm90YXRlKC0xMCAxMzAgMTA2KSI+PHJlY3QgeD0iMTIwIiB5PSIxMDIiIHdpZHRoPSIyMCIgaGVpZ2h0PSI4IiByeD0iNCIgZmlsbD0iIzhFODRDNCIvPjxwYXRoIGQ9Ik0xMjYgMTA4IGwtNSAxMiIgc3Ryb2tlPSIjOEU4NEM0IiBzdHJva2Utd2lkdGg9IjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48ZyB0cmFuc2Zvcm09InJvdGF0ZSgtMjAgMTQ0IDkyKSI+PHBhdGggZD0iTTEzMiA5MSBMMTE4IDgzIEwxMzIgOTggWiIgZmlsbD0iI0UyQjM4RiIvPjxjaXJjbGUgY3g9IjE0NCIgY3k9IjkyIiByPSIxNSIgZmlsbD0iI0UyQjM4RiIvPjxwYXRoIGQ9Ik0xNDUgODkgcTMgMi41IDYgMCBNMTUzIDg5IHEzIDIuNSA2IDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJCMkEyOCIgc3Ryb2tlLXdpZHRoPSIyLjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxlbGxpcHNlIGN4PSIxNTQiIGN5PSI5NyIgcng9IjMuMiIgcnk9IjIuMiIgZmlsbD0iI0U4OTA3RiIgb3BhY2l0eT0iLjgiLz48Y2lyY2xlIGN4PSIxNTkiIGN5PSI5NCIgcj0iMi42IiBmaWxsPSIjRDk4Qzc4Ii8+PHBhdGggZD0iTTE0OCAxMDEgcTQgMyA4IDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJCMkEyOCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMTU4IDgxIFExMzggNDggMTEwIDUyIFExMzAgNjIgMTMwIDgyIFoiIGZpbGw9IiM0RTdBNUYiLz48cmVjdCB4PSIxMjciIHk9Ijc3IiB3aWR0aD0iMzQiIGhlaWdodD0iNyIgcng9IjMuNSIgZmlsbD0iIzhFODRDNCIvPjxjaXJjbGUgY3g9IjEwOSIgY3k9IjUyIiByPSI1IiBmaWxsPSIjQzlCMjdDIi8+PC9nPjwvc3ZnPg==", "alt": {"en": "Step 1: on all fours, breathe in, let the belly sink, look up", "de": "Schritt 1: im Vierf\u00fc\u00dflerstand einatmen, Bauch sinken lassen, Blick nach vorn oben"}}, {"src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMTcwIj48ZWxsaXBzZSBjeD0iMTA0IiBjeT0iMTUwIiByeD0iNTQiIHJ5PSI0IiBmaWxsPSIjMDAwIiBvcGFjaXR5PSIuMDgiLz48cGF0aCBkPSJNODIgMTEyIEw4MCAxNDAgTDU0IDE0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMzY1NzQ0IiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik04NiAxMTIgTDg0IDE0MCBMNTggMTQwIiBmaWxsPSJub25lIiBzdHJva2U9IiM0RTdBNUYiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTg0IDExMiBRMTA0IDg0IDEyNiAxMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzRFN0E1RiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNMTI0IDExMiBMMTI0IDE0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMzY1NzQ0IiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMjggMTEyIEwxMjggMTQwIiBmaWxsPSJub25lIiBzdHJva2U9IiM0RTdBNUYiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PGcgdHJhbnNmb3JtPSJyb3RhdGUoMjAgMTMwIDExMCkiPjxyZWN0IHg9IjEyMCIgeT0iMTA2IiB3aWR0aD0iMjAiIGhlaWdodD0iOCIgcng9IjQiIGZpbGw9IiM4RTg0QzQiLz48cGF0aCBkPSJNMTI2IDExMiBsLTUgMTIiIHN0cm9rZT0iIzhFODRDNCIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L2c+PGcgdHJhbnNmb3JtPSJyb3RhdGUoNDAgMTQwIDExOCkiPjxwYXRoIGQ9Ik0xMjggMTE3IEwxMTQgMTA5IEwxMjggMTI0IFoiIGZpbGw9IiNFMkIzOEYiLz48Y2lyY2xlIGN4PSIxNDAiIGN5PSIxMTgiIHI9IjE1IiBmaWxsPSIjRTJCMzhGIi8+PHBhdGggZD0iTTE0MSAxMTUgcTMgMi41IDYgMCBNMTQ5IDExNSBxMyAyLjUgNiAwIiBmaWxsPSJub25lIiBzdHJva2U9IiMyQjJBMjgiIHN0cm9rZS13aWR0aD0iMi4yIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48ZWxsaXBzZSBjeD0iMTUwIiBjeT0iMTIzIiByeD0iMy4yIiByeT0iMi4yIiBmaWxsPSIjRTg5MDdGIiBvcGFjaXR5PSIuOCIvPjxjaXJjbGUgY3g9IjE1NSIgY3k9IjEyMCIgcj0iMi42IiBmaWxsPSIjRDk4Qzc4Ii8+PHBhdGggZD0iTTE0NCAxMjcgcTQgMyA4IDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJCMkEyOCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMTU0IDEwNyBRMTM0IDc0IDEwNiA3OCBRMTI2IDg4IDEyNiAxMDggWiIgZmlsbD0iIzRFN0E1RiIvPjxyZWN0IHg9IjEyMyIgeT0iMTAzIiB3aWR0aD0iMzQiIGhlaWdodD0iNyIgcng9IjMuNSIgZmlsbD0iIzhFODRDNCIvPjxjaXJjbGUgY3g9IjEwNSIgY3k9Ijc4IiByPSI1IiBmaWxsPSIjQzlCMjdDIi8+PC9nPjxwYXRoIGQ9Ik0xNTAgNzAgcTYgLTQgMTIgMCBNMTU0IDYwIHE1IC0zIDEwIDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzhFODZCOCIgc3Ryb2tlLXdpZHRoPSIyLjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==", "alt": {"en": "Step 2: breathe out, round the back up, chin to chest", "de": "Schritt 2: ausatmen, R\u00fccken rund machen, Kinn zur Brust"}}], "hipflexor": [{"src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMTcwIj48ZWxsaXBzZSBjeD0iMTAwIiBjeT0iMTUwIiByeD0iNTYiIHJ5PSI0IiBmaWxsPSIjMDAwIiBvcGFjaXR5PSIuMDgiLz48cGF0aCBkPSJNOTIgMTEyIEw4MCAxNDAgTDUyIDE0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMzY1NzQ0IiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NiAxMTIgTDEyNCAxMTIgTDEyNCAxNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzRFN0E1RiIgc3Ryb2tlLXdpZHRoPSI4IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNMTI0IDE0MCBsOSAwIHE0IDAgMyAtNSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNEU3QTVGIiBzdHJva2Utd2lkdGg9IjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NCAxMTIgTDk2IDc2IiBmaWxsPSJub25lIiBzdHJva2U9IiM0RTdBNUYiIHN0cm9rZS13aWR0aD0iOSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTk2IDgyIFExMTIgOTIgMTE2IDEwNiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNEU3QTVGIiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxnIHRyYW5zZm9ybT0icm90YXRlKDAgOTcgNzQpIj48cmVjdCB4PSI4NyIgeT0iNzAiIHdpZHRoPSIyMCIgaGVpZ2h0PSI4IiByeD0iNCIgZmlsbD0iIzhFODRDNCIvPjxwYXRoIGQ9Ik05MyA3NiBsLTUgMTIiIHN0cm9rZT0iIzhFODRDNCIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L2c+PGcgdHJhbnNmb3JtPSJyb3RhdGUoMCAxMDAgNTYpIj48cGF0aCBkPSJNODggNTUgTDc0IDQ3IEw4OCA2MiBaIiBmaWxsPSIjRTJCMzhGIi8+PGNpcmNsZSBjeD0iMTAwIiBjeT0iNTYiIHI9IjE1IiBmaWxsPSIjRTJCMzhGIi8+PHBhdGggZD0iTTEwMSA1MyBxMyAyLjUgNiAwIE0xMDkgNTMgcTMgMi41IDYgMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMkIyQTI4IiBzdHJva2Utd2lkdGg9IjIuMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PGVsbGlwc2UgY3g9IjExMCIgY3k9IjYxIiByeD0iMy4yIiByeT0iMi4yIiBmaWxsPSIjRTg5MDdGIiBvcGFjaXR5PSIuOCIvPjxjaXJjbGUgY3g9IjExNSIgY3k9IjU4IiByPSIyLjYiIGZpbGw9IiNEOThDNzgiLz48cGF0aCBkPSJNMTA0IDY1IHE0IDMgOCAwIiBmaWxsPSJub25lIiBzdHJva2U9IiMyQjJBMjgiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTExNCA0NSBROTQgMTIgNjYgMTYgUTg2IDI2IDg2IDQ2IFoiIGZpbGw9IiM0RTdBNUYiLz48cmVjdCB4PSI4MyIgeT0iNDEiIHdpZHRoPSIzNCIgaGVpZ2h0PSI3IiByeD0iMy41IiBmaWxsPSIjOEU4NEM0Ii8+PGNpcmNsZSBjeD0iNjUiIGN5PSIxNiIgcj0iNSIgZmlsbD0iI0M5QjI3QyIvPjwvZz48L3N2Zz4=", "alt": {"en": "Step 1: half-kneel, front knee over the ankle, back knee down", "de": "Schritt 1: Halbkniestand, vorderes Knie \u00fcber dem Kn\u00f6chel, hinteres Knie am Boden"}}, {"src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMTcwIj48ZWxsaXBzZSBjeD0iMTA0IiBjeT0iMTUwIiByeD0iNTgiIHJ5PSI0IiBmaWxsPSIjMDAwIiBvcGFjaXR5PSIuMDgiLz48cGF0aCBkPSJNMTAyIDExNiBMODAgMTQwIEw1MiAxNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzM2NTc0NCIgc3Ryb2tlLXdpZHRoPSI4IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNMTA2IDExNiBMMTMyIDExMCBMMTI4IDE0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNEU3QTVGIiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMjggMTQwIGw5IDAgcTQgMCAzIC01IiBmaWxsPSJub25lIiBzdHJva2U9IiM0RTdBNUYiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTEwNCAxMTYgTDEwNiA4MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNEU3QTVGIiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMDYgODYgUTExNiA2NiAxMTAgNDQiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzM2NTc0NCIgc3Ryb2tlLXdpZHRoPSI4IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNMTA2IDg2IFExMjAgOTggMTI0IDEwOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNEU3QTVGIiBzdHJva2Utd2lkdGg9IjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxnIHRyYW5zZm9ybT0icm90YXRlKDAgMTA3IDc4KSI+PHJlY3QgeD0iOTciIHk9Ijc0IiB3aWR0aD0iMjAiIGhlaWdodD0iOCIgcng9IjQiIGZpbGw9IiM4RTg0QzQiLz48cGF0aCBkPSJNMTAzIDgwIGwtNSAxMiIgc3Ryb2tlPSIjOEU4NEM0IiBzdHJva2Utd2lkdGg9IjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48ZyB0cmFuc2Zvcm09InJvdGF0ZSgwIDExMCA2MCkiPjxwYXRoIGQ9Ik05OCA1OSBMODQgNTEgTDk4IDY2IFoiIGZpbGw9IiNFMkIzOEYiLz48Y2lyY2xlIGN4PSIxMTAiIGN5PSI2MCIgcj0iMTUiIGZpbGw9IiNFMkIzOEYiLz48cGF0aCBkPSJNMTExIDU3IHEzIDIuNSA2IDAgTTExOSA1NyBxMyAyLjUgNiAwIiBmaWxsPSJub25lIiBzdHJva2U9IiMyQjJBMjgiIHN0cm9rZS13aWR0aD0iMi4yIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48ZWxsaXBzZSBjeD0iMTIwIiBjeT0iNjUiIHJ4PSIzLjIiIHJ5PSIyLjIiIGZpbGw9IiNFODkwN0YiIG9wYWNpdHk9Ii44Ii8+PGNpcmNsZSBjeD0iMTI1IiBjeT0iNjIiIHI9IjIuNiIgZmlsbD0iI0Q5OEM3OCIvPjxwYXRoIGQ9Ik0xMTQgNjkgcTQgMyA4IDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJCMkEyOCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMTI0IDQ5IFExMDQgMTYgNzYgMjAgUTk2IDMwIDk2IDUwIFoiIGZpbGw9IiM0RTdBNUYiLz48cmVjdCB4PSI5MyIgeT0iNDUiIHdpZHRoPSIzNCIgaGVpZ2h0PSI3IiByeD0iMy41IiBmaWxsPSIjOEU4NEM0Ii8+PGNpcmNsZSBjeD0iNzUiIGN5PSIyMCIgcj0iNSIgZmlsbD0iI0M5QjI3QyIvPjwvZz48cGF0aCBkPSJNNzggMTEyIGwxNCAwIiBzdHJva2U9IiNDOTlBNzgiIHN0cm9rZS13aWR0aD0iMi41IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNODYgMTA3IGw2IDUgbC02IDUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0M5OUE3OCIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xNDAgNjAgcTYgLTQgMTIgMCBNMTQ0IDUwIHE1IC0zIDEwIDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzhFODZCOCIgc3Ryb2tlLXdpZHRoPSIyLjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==", "alt": {"en": "Step 2: gently push the hips forward, back arm up, switch sides halfway", "de": "Schritt 2: H\u00fcfte sanft nach vorn schieben, hinterer Arm nach oben, nach der H\u00e4lfte wechseln"}}], "lunge": [{"src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMTcwIj48ZWxsaXBzZSBjeD0iMTAwIiBjeT0iMTUwIiByeD0iMzAiIHJ5PSI0IiBmaWxsPSIjMDAwIiBvcGFjaXR5PSIuMDgiLz48cGF0aCBkPSJNOTggMTA2IEw5NiAxNDIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzM2NTc0NCIgc3Ryb2tlLXdpZHRoPSI4IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNOTYgMTQyIGw5IDAgcTQgMCAzIC01IiBmaWxsPSJub25lIiBzdHJva2U9IiMzNjU3NDQiIHN0cm9rZS13aWR0aD0iNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTEwMiAxMDYgTDEwNCAxNDIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzRFN0E1RiIgc3Ryb2tlLXdpZHRoPSI4IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNMTA0IDE0MiBsOSAwIHE0IDAgMyAtNSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNEU3QTVGIiBzdHJva2Utd2lkdGg9IjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMDAgMTA2IEwxMDAgNzIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzRFN0E1RiIgc3Ryb2tlLXdpZHRoPSI5IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNMTAwIDc4IFE4NiA5MCA5NiAxMDIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzRFN0E1RiIgc3Ryb2tlLXdpZHRoPSI4IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48ZyB0cmFuc2Zvcm09InJvdGF0ZSgwIDEwMSA3MCkiPjxyZWN0IHg9IjkxIiB5PSI2NiIgd2lkdGg9IjIwIiBoZWlnaHQ9IjgiIHJ4PSI0IiBmaWxsPSIjRDg3ODNBIi8+PHBhdGggZD0iTTk3IDcyIGwtNSAxMiIgc3Ryb2tlPSIjRDg3ODNBIiBzdHJva2Utd2lkdGg9IjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48ZyB0cmFuc2Zvcm09InJvdGF0ZSgwIDEwNCA1MikiPjxwYXRoIGQ9Ik05MiA1MSBMNzggNDMgTDkyIDU4IFoiIGZpbGw9IiNFMkIzOEYiLz48Y2lyY2xlIGN4PSIxMDQiIGN5PSI1MiIgcj0iMTUiIGZpbGw9IiNFMkIzOEYiLz48Y2lyY2xlIGN4PSIxMDgiIGN5PSI0OSIgcj0iMi4zIiBmaWxsPSIjMkIyQTI4Ii8+PGNpcmNsZSBjeD0iMTE2IiBjeT0iNDkiIHI9IjIuMyIgZmlsbD0iIzJCMkEyOCIvPjxlbGxpcHNlIGN4PSIxMTQiIGN5PSI1NyIgcng9IjMuMiIgcnk9IjIuMiIgZmlsbD0iI0U4OTA3RiIgb3BhY2l0eT0iLjgiLz48Y2lyY2xlIGN4PSIxMTkiIGN5PSI1NCIgcj0iMi42IiBmaWxsPSIjRDk4Qzc4Ii8+PHBhdGggZD0iTTEwOCA2MSBxNCAzIDggMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMkIyQTI4IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxwYXRoIGQ9Ik0xMTggNDEgUTk4IDggNzAgMTIgUTkwIDIyIDkwIDQyIFoiIGZpbGw9IiM0RTdBNUYiLz48cmVjdCB4PSI4NyIgeT0iMzciIHdpZHRoPSIzNCIgaGVpZ2h0PSI3IiByeD0iMy41IiBmaWxsPSIjRDg3ODNBIi8+PGNpcmNsZSBjeD0iNjkiIGN5PSIxMiIgcj0iNSIgZmlsbD0iI0M5QjI3QyIvPjwvZz48L3N2Zz4=", "alt": {"en": "Step 1: stand tall, hands on hips", "de": "Schritt 1: aufrecht stehen, H\u00e4nde an der H\u00fcfte"}}, {"src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMTcwIj48ZWxsaXBzZSBjeD0iOTgiIGN5PSIxNTAiIHJ4PSI1MiIgcnk9IjQiIGZpbGw9IiMwMDAiIG9wYWNpdHk9Ii4wOCIvPjxwYXRoIGQ9Ik05MiAxMTAgTDcwIDEzNCBMNDQgMTQwIiBmaWxsPSJub25lIiBzdHJva2U9IiMzNjU3NDQiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTQ0IDE0MCBsLTMgLTUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzM2NTc0NCIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNOTYgMTEwIEwxMjAgMTEyIEwxMTggMTQyIiBmaWxsPSJub25lIiBzdHJva2U9IiM0RTdBNUYiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTExOCAxNDIgbDkgMCBxNCAwIDMgLTUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzRFN0E1RiIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNOTQgMTEwIEw5NiA3NCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNEU3QTVGIiBzdHJva2Utd2lkdGg9IjkiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxwYXRoIGQ9Ik05NiA4MCBRODIgOTIgOTIgMTA0IiBmaWxsPSJub25lIiBzdHJva2U9IiM0RTdBNUYiIHN0cm9rZS13aWR0aD0iOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PGcgdHJhbnNmb3JtPSJyb3RhdGUoMCA5NyA3MikiPjxyZWN0IHg9Ijg3IiB5PSI2OCIgd2lkdGg9IjIwIiBoZWlnaHQ9IjgiIHJ4PSI0IiBmaWxsPSIjRDg3ODNBIi8+PHBhdGggZD0iTTkzIDc0IGwtNSAxMiIgc3Ryb2tlPSIjRDg3ODNBIiBzdHJva2Utd2lkdGg9IjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvZz48ZyB0cmFuc2Zvcm09InJvdGF0ZSgwIDEwMCA1NCkiPjxwYXRoIGQ9Ik04OCA1MyBMNzQgNDUgTDg4IDYwIFoiIGZpbGw9IiNFMkIzOEYiLz48Y2lyY2xlIGN4PSIxMDAiIGN5PSI1NCIgcj0iMTUiIGZpbGw9IiNFMkIzOEYiLz48cGF0aCBkPSJNMTAxIDQ4IGw1IDMgbC01IDMgTTExNSA0OCBsLTUgMyBsNSAzIiBmaWxsPSJub25lIiBzdHJva2U9IiMyQjJBMjgiIHN0cm9rZS13aWR0aD0iMi4yIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48ZWxsaXBzZSBjeD0iMTEwIiBjeT0iNTkiIHJ4PSIzLjIiIHJ5PSIyLjIiIGZpbGw9IiNFODkwN0YiIG9wYWNpdHk9Ii44Ii8+PGNpcmNsZSBjeD0iMTE1IiBjeT0iNTYiIHI9IjIuNiIgZmlsbD0iI0Q5OEM3OCIvPjxwYXRoIGQ9Ik0xMDQgNjMgcTQgMyA4IDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzJCMkEyOCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNMTE0IDQzIFE5NCAxMCA2NiAxNCBRODYgMjQgODYgNDQgWiIgZmlsbD0iIzRFN0E1RiIvPjxyZWN0IHg9IjgzIiB5PSIzOSIgd2lkdGg9IjM0IiBoZWlnaHQ9IjciIHJ4PSIzLjUiIGZpbGw9IiNEODc4M0EiLz48Y2lyY2xlIGN4PSI2NSIgY3k9IjE0IiByPSI1IiBmaWxsPSIjQzlCMjdDIi8+PC9nPjxwYXRoIGQ9Ik0xMjggNDAgcS00IDcgMCAxMCBxNCAtMyAwIC0xMCIgZmlsbD0iIzdGQjJENiIvPjxwYXRoIGQ9Ik02MCAxMDQgbDAgMTgiIHN0cm9rZT0iI0M5OUE3OCIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjxwYXRoIGQ9Ik01NSAxMTggbDUgNiBsNSAtNiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjQzk5QTc4IiBzdHJva2Utd2lkdGg9IjIuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTEzMCAxMTIgbDAgMjYiIHN0cm9rZT0iI0M5OUE3OCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtZGFzaGFycmF5PSIyIDQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==", "alt": {"en": "Step 2: step back and lower the back knee towards the floor, front knee over the ankle", "de": "Schritt 2: einen Schritt zur\u00fcck, hinteres Knie Richtung Boden, vorderes Knie \u00fcber dem Kn\u00f6chel"}}]};
+  const accentOf = (m) => (m === 'moderate' ? 'clementine' : m === 'recovery' ? 'lavender' : 'brass');
+
+  function renderMode(day) {
+    const s = t();
+    const tile = (m) => `
+      <div class="fn-tile mode-tile">
+        <div class="mode-img"><div class="mode-art img-area--${m}"><img src="${ART[m]}" alt="Elf · ${s[m]}"></div></div>
+        <div class="tile-head"><div class="ic" style="background:var(--${m === 'moderate' ? 'clementine' : 'lavender'});color:var(--on-${m === 'moderate' ? 'clementine' : 'lavender'})">${modeIcon(m)}</div>
+          <div><div class="tile-name" style="color:var(--${m === 'moderate' ? 'clementine' : 'lavender'})">${s[m]}</div><div class="fn-meta">${s.meta(routineFor(day, m).length)}</div></div></div>
+        <div class="tile-line"><b style="color:var(--ink)">${routineName(day, m)}</b> · ${s[m + 'Line']}</div>
+        <button class="fn-btn fn-btn--${m} fn-btn--block" data-act="start" data-mode="${m}">${s.start}</button>
+      </div>`;
+    $screen.innerHTML = `<div class="scroll centred modes">
+      <button class="fn-link" data-act="home">${I.back}${s.calendar}</button>
+      <div class="centred-body">
+        <div class="fn-meta">${s.day(day)} · ${fmtDay(day)}</div>
+        <h1 class="screen-title">${s.pickMode}</h1>
+        ${state.done.has(day) ? `<div style="margin-top:10px"><span class="fn-badge fn-badge--done">${I.check}${s.doneBadge}</span></div>` : ''}
+        <div class="tiles">${tile('moderate')}${tile('recovery')}</div>
+        ${healthNote()}</div></div>`;
+  }
+
+  function renderDay24Intro() {
+    const s = t();
+    const done = state.done.has(24);
+    $screen.innerHTML = `<div class="scroll centred">
+      <button class="fn-link" data-act="home">${I.back}${s.calendar}</button>
+      <div class="centred-body">
+      <div class="fn-meta">${s.day(24)} · ${fmtDay(24)}</div>
+      <h1 class="screen-title" style="color:var(--brass)">${s.d24Title}</h1>
+      ${done ? `<div style="margin-top:10px"><span class="fn-badge fn-badge--done">${I.check}${s.doneBadge}</span></div>` : ''}
+      <div class="fn-tile mode-tile" style="margin-top:16px">
+        <div class="mode-img"><div class="mode-art img-area--day24"><span>Sleigh run intro (1:1)</span></div></div>
+        <div class="tile-head"><div class="ic" style="background:var(--brass);color:var(--sky)">${I.star}</div>
+          <div><div class="tile-name" style="color:var(--brass)">${s.d24Badge}</div><div class="fn-meta">${s.d24Meta}</div></div></div>
+        <div class="tile-line">${s.d24Line}</div>
+        <button class="fn-btn fn-btn--day24 fn-btn--block" data-act="start" data-mode="day24">${s.start}</button>
+      </div>
+      ${done ? `<button class="fn-btn fn-btn--secondary fn-btn--block" style="margin-top:12px" data-act="replay">${I.refresh}${s.replay}</button>` : ''}
+      ${healthNote()}</div></div>`;
+  }
+
+  function cardsData(day, mode) {
+    const L = state.lang;
+    if (mode === 'day24') return DAY24.map((c, i) => ({ title: c.name[L], story: c.story[L], amount: c.move[L], easier: c.easier[L], harder: c.harder[L], imgs: imgCount(i + 1) }));
+    return routineFor(day, mode).map((id, i) => ({ id, title: EX[id].name[L], desc: EX[id].desc[L], amount: EX[id].amt, imgs: imgCount(day + i) }));
+  }
+
+  function renderCards(day, mode) {
+    const s = t();
+    const cards = cardsData(day, mode);
+    const accent = mode === 'moderate' ? 'clementine' : mode === 'recovery' ? 'lavender' : 'brass';
+    const html = cards.map((c, i) => {
+      let slots = '';
+      const art = c.id && ART_EX[c.id];
+      if (art) { c.imgs = art.length; art.forEach((a) => { slots += `<div class="img-slot img-slot--art"><img src="${a.src}" alt="${a.alt[state.lang]}"></div>`; }); }
+      else for (let k = 1; k <= c.imgs; k++) slots += `<div class="img-slot" role="img" aria-label="${s.img(k, c.imgs)}">${s.img(k, c.imgs)}</div>`;
+      let dots = '';
+      for (let k = 0; k < cards.length; k++) dots += `<span class="fn-dot${k <= i ? ' fn-dot--on' : ''}"></span>`;
+      return `<section class="card" aria-label="${s.of(i + 1, cards.length)}">
+        <div class="img-area img-area--${mode} n${c.imgs}">${slots}</div>
+        <h2 class="ex-name">${c.title}</h2>
+        ${c.story ? `<p class="story">${c.story}</p>` : ''}
+        ${c.desc ? `<p class="fn-desc">${c.desc}</p>` : ''}
+        <div class="card-foot"><span class="amt" style="color:var(--${accent})">${c.amount}</span>
+          <span class="fn-dots fn-dots--${mode}">${dots}<span class="fn-meta" style="margin-left:6px">${s.of(i + 1, cards.length)}</span></span></div>
+        ${c.easier ? `<div class="opts"><div><strong>${s.easier}</strong>${c.easier}</div><div><strong>${s.harder}</strong>${c.harder}</div></div>` : ''}
+      </section>`;
+    }).join('');
+    $screen.innerHTML = `
+      <div class="card-top"><button class="fn-link" style="font-size:13px" data-act="back-from-cards">${I.back}${s.day(day)}</button>${badge(mode)}</div>
+      <div class="track" id="track" tabindex="0">${html}</div>
+      <div class="card-cta"><button class="fn-btn fn-btn--secondary card-back" id="prevBtn" data-act="prev" aria-label="${s.prevCard}">${I.back}</button>
+        <button class="fn-btn fn-btn--${mode} fn-btn--block" id="nextBtn" data-act="next"></button></div>`;
+    const track = document.getElementById('track');
+    track.addEventListener('scroll', onTrackScroll, { passive: true });
+    track.scrollLeft = state.cardIndex * track.clientWidth;
+    updateCta(cards.length);
+  }
+  function onTrackScroll() {
+    const track = document.getElementById('track');
+    const i = Math.round(track.scrollLeft / track.clientWidth);
+    if (i !== state.cardIndex) { state.cardIndex = i; updateCta(track.children.length); }
+  }
+  function updateCta(n) {
+    const s = t(), btn = document.getElementById('nextBtn'), last = state.cardIndex === n - 1;
+    btn.innerHTML = last ? `${I.check}${s.finish}` : `${s.next}${I.next}`;
+    btn.dataset.act = last ? 'finish' : 'next';
+    document.getElementById('prevBtn').disabled = state.cardIndex === 0;
+  }
+  function goToCard(i) {
+    const track = document.getElementById('track');
+    const target = Math.max(0, Math.min(track.children.length - 1, i));
+    track.scrollTo({ left: target * track.clientWidth, behavior: prefersReduced() ? 'auto' : 'smooth' });
+  }
+
+  function renderMoment(day) {
+    const s = t(), n = state.done.size;
+    // Tap anywhere (or the button) to go back early; otherwise it returns by itself after MOMENT_MS.
+    $screen.innerHTML = `<div class="fn-scene moment${motionCls()}" data-act="home">
+      <div class="fade"><div class="ring">${I.check}</div>
+        <h1 class="c-title">${s.momentTitle(day)}</h1>
+        <div class="fn-meta" style="margin-top:6px">${s.momentMeta(n)}</div>
+        <div class="pbar"><span style="width:${n / 24 * 100}%"></span></div></div>
+      <div class="front-snow">${flakes(45, { min: 3, range: 4, op: .45, opRange: .45, dur: 3, durRange: 2.5 })}</div>
+      <button class="fn-btn fn-btn--primary bottom-cta" data-act="home">${s.backToCal}</button></div>`;
+    state.momentTimer = setTimeout(() => { if (state.view.name === 'moment') go({ name: 'calendar' }); }, MOMENT_MS);
+  }
+  const MOMENT_MS = 3000;
+
+  function renderSleigh() {
+    const s = t();
+    // Simple stand-in silhouette: two reindeer and a sleigh, drawn in sky colour against the moon.
+    const deer = (x) => `<g transform="translate(${x},0)"><ellipse cx="14" cy="22" rx="12" ry="6"/><path d="M24 19l6-8 3 1-5 9z"/><path d="M30 11l-2-6M30 11l4-5M31 8l3-1" stroke="var(--sky)" stroke-width="1.6" fill="none" stroke-linecap="round"/><path d="M6 26l-4 8M10 27l-1 8M18 27l2 8M22 25l5 7" stroke="var(--sky)" stroke-width="2" stroke-linecap="round"/></g>`;
+    const sleighSvg = `<svg class="sleigh" viewBox="0 0 170 50" fill="var(--sky)" aria-hidden="true">
+      ${deer(96)}${deer(132)}
+      <path d="M40 30L96 22" stroke="var(--sky)" stroke-width="1.5"/>
+      <path d="M8 18h34l4 14H14q-8 0-6-14z"/><rect x="18" y="8" width="16" height="11" rx="2"/>
+      <path d="M4 38h46q6 0 8-5" stroke="var(--sky)" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>`;
+    $screen.innerHTML = `<div class="fn-scene sleigh-scene${motionCls()}" data-act="skip">
+      <div class="snowlayer">${flakes(30, { min: 2, range: 3, op: .25, opRange: .35, dur: 6, durRange: 5 })}</div>
+      <div class="moon"></div>${sleighSvg}
+      <div class="sleigh-msg"><h1 class="c-title" style="color:var(--brass)">${s.sleighTitle}</h1><p>${s.sleighMsg}</p></div>
+      <button class="fn-btn fn-btn--primary bottom-cta" data-act="home">${s.backToCal}</button></div>`;
+  }
+
+  function renderFinale() {
+    const s = t();
+    $screen.innerHTML = `<div class="fn-scene cal finale${motionCls()}" data-act="skip">
+      <div class="snowlayer">${flakes(26, { min: 2, range: 3, op: .2, opRange: .3, dur: 7, durRange: 7 })}</div>
+      ${sleighHtml({ finale: true })}
+      <div class="sl-msg"><h1 class="c-title" style="color:var(--candle)">${s.finaleTitle}</h1><p>${s.finaleMsg}</p></div>
+      <button class="fn-btn fn-btn--primary bottom-cta" data-act="home">${s.backToCal}</button></div>`;
+  }
+
+  function render() {
+    try {
+      document.documentElement.lang = state.lang;
+      const v = state.view;
+      if (v.name === 'calendar') renderCalendar();
+      else if (v.name === 'mode') (v.day === 24 ? renderDay24Intro() : ({ tiles: renderMode, window: renderModeWindow, switch: renderModeSwitch })[state.modeStyle](v.day));
+      else if (v.name === 'cards') renderCards(v.day, v.mode);
+      else if (v.name === 'moment') renderMoment(v.day);
+      else if (v.name === 'sleigh') renderSleigh();
+      else if (v.name === 'finale') renderFinale();
+      else throw new Error('Unknown view: ' + v.name);
+      fitHouse();
+      fitModes();
+      if (v.name === 'calendar') { playLoad(); $screen.querySelector('.gift-ready')?.focus({ preventScroll: true }); }
+    } catch (err) {
+      showError(err);
+      throw err;
+    }
+  }
+  function showError(err) {
+    const s = t();
+    $screen.innerHTML = `<div class="scroll centred"><div class="centred-body" style="justify-content:center">
+      <div class="fn-notice fn-notice--error" role="alert"><div class="fn-notice__title">${I.alert}${s.errTitle}</div>
+        <p class="fn-notice__body">${s.errBody}</p><p class="fn-meta" style="margin:0 0 16px">${err.message}</p>
+        <button class="fn-btn fn-btn--primary" data-act="retry">${I.refresh}${s.retry}</button></div></div></div>`;
+  }
+  // Scale the house to fill the free space at any window size: below the menu button (64px), above the
+  // snow bank (house sits at 100px), and at most 80% of the width so the neighbours still show beside it.
+  // The house fills the free space: below the menu button, above the snow bank (house sits at 100px), and 80% of the
+  // width so the neighbours still show. --s scales text, roof and spacing; width and height then stretch independently.
+  // Lay the background houses side by side outward from the calendar house; the trees fill whatever is left.
+  function placeStreet(scene, houseW, houseH, s) {
+    const W = scene.clientWidth, mid = W / 2;
+    ['l', 'r'].forEach((side) => {
+      let edge = houseW / 2 - 10 * s; // distance from the centre to the inner edge of the next house (10px tucked behind)
+      STREET[side].forEach(([, wf, hf], i) => {
+        const el = scene.querySelector(`.nb[data-side="${side}"][data-i="${i}"]`);
+        const w = houseW * 0.6 * wf;
+        el.style.width = w + 'px';
+        el.style.height = houseH * hf + 'px';
+        el.style.left = (side === 'l' ? mid - edge - w : mid + edge) + 'px';
+        edge += w + 6 * s; // small gap so neighbouring houses read as separate buildings
+      });
+      const trees = scene.querySelector(`.nb-trees[data-side="${side}"]`);
+      const tw = Math.max(0, mid - edge + 10);
+      trees.style.display = tw > 0 ? '' : 'none';
+      trees.style.width = tw + 'px';
+      trees.style.height = 100 * s + 'px';
+      trees.style.left = (side === 'l' ? mid - edge - tw + 10 : mid + edge - 10) + 'px';
+      trees.querySelector('pattern').setAttribute('patternTransform', `scale(${s})`);
+    });
+  }
+  // Mode choice / day-24 intro: largest square art that lets every tile fit the screen height and its tile width.
+  function fitModes() {
+    const body = $screen.querySelector('.centred-body');
+    if (!body) return;
+    const imgs = [...body.querySelectorAll('.mode-img')];
+    if (!imgs.length) return; // e.g. the error screen: nothing to size
+    if (getComputedStyle(imgs[0]).display === 'none' && !imgs[0].classList.contains('none')) return; // small phone: hidden by CSS
+    imgs.forEach((e) => e.classList.remove('none'));
+    body.style.setProperty('--art', '0px');
+    const tiles = body.querySelector('.tiles');
+    const cols = tiles ? getComputedStyle(tiles).gridTemplateColumns.split(' ').length : 1;
+    const rows = Math.ceil(imgs.length / cols);
+    const styleOf = getComputedStyle(body);
+    const room = body.clientHeight - parseFloat(styleOf.paddingTop) - [...body.children].reduce((h, c) => h + c.offsetHeight + parseFloat(getComputedStyle(c).marginTop), 0);
+    const tile = imgs[0].parentElement;
+    const tileInner = tile.clientWidth - 2 * parseFloat(getComputedStyle(tile).paddingLeft);
+    const art = Math.floor(Math.min(room / rows - 8, tileInner));
+    if (art < 72) { imgs.forEach((e) => e.classList.add('none')); return; } // too small to read as a picture
+    body.style.setProperty('--art', art + 'px');
+  }
+  function fitHouse() {
+    const scene = $screen.querySelector('.cal');
+    if (!scene || !scene.querySelector('.house')) return;
+    const finale = scene.classList.contains('finale');
+    const top = finale ? 70 : 64;
+    const availH = scene.clientHeight - 100 - top;
+    const availW = scene.clientWidth * 0.8;
+    const s = Math.min(availH / 507, availW / 292); // 292 × 507 = the house at scale 1
+    if (!(s > 0)) throw new Error('Calendar scene has no space to draw the house');
+    const set = (k, v) => scene.style.setProperty(k, v);
+    // Windows may be taller than wide but never wider: cap the house width at square windows.
+    // Unscaled layout: roof 113, wall padding 14+44, row gap 12 (×5), column gap 18 (×3), side padding 14+14.
+    const hu = availH / s;
+    const winH = (hu - 113 - 58 - 5 * 12) / 6;
+    const wu = Math.min(availW / s, 4 * winH + 3 * 18 + 28);
+    set('--s', s.toFixed(3));
+    set('--hw', wu.toFixed(1) + 'px');
+    set('--hhu', hu.toFixed(1) + 'px');
+    set('--hwpx', Math.round(wu * s) + 'px'); // neighbours fill the rest of the width
+    set('--hh', Math.round(availH) + 'px');
+    placeStreet(scene, wu * s, availH, s);
+    // Finale: message just below the shrunk house (scale .56, shifted up 6% of its unscaled height).
+    if (finale) set('--msg-top', Math.round(top + availH * 0.56 - 0.06 * availH / s + 32) + 'px');
+  }
+
+  const go = (view) => { clearTimeout(state.momentTimer); if (view.name !== 'calendar') state.pending = null; state.view = view; state.menuOpen = false; render(); ($screen.querySelector('.gift-ready') || $screen.querySelector('button, [tabindex]'))?.focus({ preventScroll: true }); };
+
+  // ---------- Toast ----------
+  let toastTimer;
+  function toast(icon, msg) {
+    const el = document.getElementById('toast');
+    el.innerHTML = `<div class="fn-toast">${icon}<span>${msg}</span></div>`;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+  }
+
+  // ---------- Events ----------
+  $screen.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-act]');
+    if (!b) return;
+    const v = state.view;
+    switch (b.dataset.act) {
+      case 'door': {
+        const n = +b.dataset.day;
+        if (v.name !== 'calendar') return;
+        if (winState(n) === 'locked') { toast(I.lock, t().opensOn(fmtDay(n))); return; }
+        const r = b.getBoundingClientRect(), sr = $screen.getBoundingClientRect();
+        state.zoomFrom = { x: r.left + r.width / 2 - sr.left, y: r.top + r.height / 2 - sr.top, k: r.width / sr.width };
+        state.pick = null;
+        go({ name: 'mode', day: n }); break;
+      }
+      case 'pick': state.pick = b.dataset.mode; applyPick(); break;
+      case 'menu': state.menuOpen = !state.menuOpen; state.menuSection = null; render(); break;
+      case 'menu-close': state.menuOpen = false; render(); document.querySelector('.fn-menu-btn').focus(); break;
+      case 'menu-section': state.menuSection = state.menuSection === b.dataset.section ? null : b.dataset.section; render(); break;
+      case 'lang': state.lang = b.dataset.lang; store.set('lang', state.lang); render(); break;
+      case 'home': go({ name: 'calendar' }); break;
+      case 'retry': go({ name: 'calendar' }); break;
+      case 'start': state.cardIndex = 0; go({ name: 'cards', day: v.day, mode: b.dataset.mode }); break;
+      case 'back-from-cards': go({ name: 'mode', day: v.day }); break;
+      case 'next': goToCard(state.cardIndex + 1); break;
+      case 'prev': goToCard(state.cardIndex - 1); break;
+      case 'finish': {
+        const day = v.day;
+        finishDay(day, v.mode || 'moderate');
+        if (day === 24) go({ name: state.done.size === 24 ? 'finale' : 'sleigh' });
+        else go({ name: 'calendar' });
+        break;
+      }
+      case 'replay': go({ name: state.done.size === 24 ? 'finale' : 'sleigh' }); break;
+      case 'skip': b.classList.add('end'); break;
+      case 'shelf': toast(I.lock, t().opensOn(fmtDay(+b.dataset.day))); break;
+      default: throw new Error('Unknown action: ' + b.dataset.act);
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.target.closest && e.target.closest('.controls')) return;
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.classList && e.target.classList.contains('gift-ready')) { e.preventDefault(); throwGift(e.target, 0, 0, 0.3); return; }
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.classList && (e.target.classList.contains('gift') || e.target.classList.contains('ride'))) { e.preventDefault(); e.target.dispatchEvent(new MouseEvent('click', { bubbles: true })); return; }
+    const v = state.view;
+    // Mode switch: ←/→ move the choice between the two answers (radio-group behaviour)
+    if (e.target.closest && e.target.closest('#switch') && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+      state.pick = e.key === 'ArrowLeft' ? 'moderate' : 'recovery';
+      applyPick();
+      document.querySelector(`#switch [data-mode="${state.pick}"]`).focus();
+      e.preventDefault(); return;
+    }
+    if (v.name === 'cards') {
+      if (e.key === 'ArrowRight') { goToCard(state.cardIndex + 1); e.preventDefault(); }
+      if (e.key === 'ArrowLeft') { goToCard(state.cardIndex - 1); e.preventDefault(); }
+    }
+    if (e.key === 'Escape') {
+      if (state.menuOpen) { state.menuOpen = false; render(); return; }
+      if (v.name === 'cards') go({ name: 'mode', day: v.day });
+      else if (v.name !== 'calendar') go({ name: 'calendar' });
+    }
+  });
+  // Device size presets (prototype only). null = fill the window.
+  const DEVICES = [['Desktop (fill)', null], ['Small phone 360×640', [360, 640]], ['Large phone 390×844', [390, 844]],
+    ['Large Android 412×915', [412, 915]], ['Tablet 768×1024', [768, 1024]]];
+  let device = null;
+  const $stage = document.getElementById('stage');
+  const $devices = document.getElementById('devices');
+  const MODE_STYLES = [['switch', 'Switch (v3)'], ['window', 'Window opens (v2)'], ['tiles', 'Tiles (before)']];
+  const $modeStyles = document.getElementById('modeStyles');
+  function renderModeStyles() {
+    $modeStyles.innerHTML = MODE_STYLES.map(([k, l]) => `<button data-style="${k}" aria-pressed="${state.modeStyle === k}">${l}</button>`).join('');
+  }
+  $modeStyles.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-style]'); if (!b) return;
+    state.modeStyle = b.dataset.style; state.pick = null; renderModeStyles();
+    if (state.view.name === 'mode') render();
+  });
+  renderModeStyles();
+  function renderDevices() {
+    $devices.innerHTML = DEVICES.map(([label, size], i) =>
+      `<button data-device="${i}" aria-pressed="${JSON.stringify(size) === JSON.stringify(device)}">${label}</button>`).join('');
+  }
+  function fitDevice() {
+    $stage.classList.toggle('framed', device !== null);
+    if (!device) return;
+    const [w, h] = device;
+    $stage.style.setProperty('--dw', w + 'px');
+    $stage.style.setProperty('--dh', h + 'px');
+    const ds = Math.min(1, ($stage.clientWidth - 32) / w, ($stage.clientHeight - 32) / h);
+    $stage.style.setProperty('--ds', ds.toFixed(3));
+  }
+  $devices.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-device]'); if (!b) return;
+    device = DEVICES[+b.dataset.device][1];
+    renderDevices(); onLayoutChange();
+  });
+  renderDevices();
+
+  function onLayoutChange() {
+    fitDevice();
+    fitHouse();
+    fitModes();
+    if (state.view.name !== 'cards') return;
+    const track = document.getElementById('track');
+    track.scrollLeft = state.cardIndex * track.clientWidth;
+  }
+  window.addEventListener('resize', onLayoutChange);
+  document.getElementById('controls').addEventListener('toggle', onLayoutChange);
+
+  // ---------- Prototype controls ----------
+  const $date = document.getElementById('dateInput');
+  const presets = [['Real today', null], ['30 Nov', [10, 30]], ['1 Dec', [11, 1]], ['7 Dec', [11, 7]], ['23 Dec', [11, 23]], ['24 Dec', [11, 24]], ['27 Dec', [11, 27]]];
+  document.getElementById('datePresets').innerHTML = presets.map(([l], i) => `<button data-preset="${i}">${l}</button>`).join('');
+  function setSimDate(d) {
+    state.simDate = d;
+    const p = (x) => String(x).padStart(2, '0');
+    $date.value = `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+    document.getElementById('nowLabel').textContent = d.toDateString();
+    if (state.view.name === 'calendar') render();
+  }
+  document.getElementById('datePresets').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-preset]'); if (!b) return;
+    const p = presets[+b.dataset.preset][1];
+    setSimDate(p ? new Date(YEAR, p[0], p[1], 9, 0) : new Date());
+    go({ name: 'calendar' });
+  });
+  $date.addEventListener('change', () => {
+    if (!$date.value) return;
+    const [y, m, d] = $date.value.split('-').map(Number);
+    setSimDate(new Date(y, m - 1, d, 9, 0)); go({ name: 'calendar' });
+  });
+  document.getElementById('reducedMotion').addEventListener('change', (e) => { state.reducedMotion = e.target.checked; render(); });
+  document.getElementById('controls').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-ctl]'); if (!b) return;
+    const c = b.dataset.ctl;
+    if (c === 'moment') { const d = todayDoor(); if (d && d < 24) { if (state.done.has(d)) { state.done.delete(d); saveDone(); } finishDay(d, 'moderate'); } go({ name: 'calendar' }); return; }
+    if (c === 'sleigh') { go({ name: 'sleigh' }); return; }
+    if (c === 'finale') { go({ name: 'finale' }); return; }
+    if (c === 'error') { clearTimeout(state.momentTimer); showError(new Error('days.json, day 7 (moderate): unknown exercise id "squatt"')); return; }
+    if (c === 'done-1-23') for (let n = 1; n <= 23; n++) state.done.add(n);
+    else if (c === 'done-past') { const td = todayDoor(); for (let n = 1; n <= 24; n++) if (winState(n) !== 'locked' && (td === null || n < td)) state.done.add(n); }
+    else if (c === 'reset') { state.done.clear(); state.modes = {}; state.pending = null; }
+    saveDone(); go({ name: 'calendar' });
+  });
+
+  if (window.matchMedia('(max-width: 760px)').matches) document.getElementById('controls').open = false;
+  setSimDate(state.simDate);
+  render();
+})();
+</script>
+</body>
+</html>
