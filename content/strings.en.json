@@ -49,6 +49,11 @@
     "recovery": "Rather stretch out"
   },
   "pickHint": "Pick one to see today’s routine",
+  "elfAlt": {
+    "neutral": "Two elves, waiting",
+    "moderate": "Moderate elf, flexing",
+    "recovery": "Recovery elf, meditating"
+  },
   "modeMeta": "{mode} · {count} exercises · 10 min",
   "d24Title": "Santa’s sleigh run",
   "d24Badge": "Sleigh run",
