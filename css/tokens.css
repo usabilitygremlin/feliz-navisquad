@@ -74,6 +74,9 @@
   --storage-note-bg: rgba(28, 39, 51, 0.9); /* sky at 90 % over the scene */
   --scene-fir: #2a4433; /* fir trees behind the sleigh */
   --scene-shadow: #000; /* ground shadows, drawn at ~14 % opacity */
+  --santa-nose: #c9705f; /* named in tokens.json under character-nose */
+  --santa-moustache-line: #d9d4cc; /* outline of Santa's moustache */
+  --santa-mouth: #8e352d;
 
   /* ----- Type ----- */
   --font-sans: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;

@@ -1,0 +1,63 @@
+/* Day 24: the ride on the calendar, the intro screen and the take-off
+   (ported from the prototype's ride, renderDay24Intro and finale styles). */
+
+/* ----- Ride on the calendar ----- */
+.ride { cursor: pointer; outline: none; }
+.ride .ride-glow { animation: fn-ridepulse var(--dur-pulse-ride) var(--ease-in-out) infinite; }
+@keyframes fn-ridepulse { 50% { opacity: 0.25; } }
+.ride:focus-visible .ride-glow { opacity: 1; stroke-width: 5; animation: none; }
+.ride-santa { cursor: pointer; }
+
+/* ----- Intro ----- */
+.d24 {
+  flex: 1; overflow-y: auto;
+  display: flex; flex-direction: column;
+  padding: var(--space-4) max(var(--space-4), calc(50% - 260px));
+}
+.d24 > .fn-link { align-self: flex-start; }
+.d24__body { flex: 1; display: flex; flex-direction: column; justify-content: center; padding-top: var(--space-5); }
+.d24__title { font: var(--type-screen-title); color: var(--brass); }
+.d24__badge { margin-top: 10px; }
+.fn-tile { background: var(--surface); border-radius: var(--radius-card); padding: var(--space-4); }
+.d24__tile { margin-top: var(--space-4); }
+.d24__head { display: flex; gap: var(--space-3); align-items: center; }
+.d24__ic {
+  width: 36px; height: 36px; border-radius: 50%; flex: none;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--brass); color: var(--brass-deep);
+}
+.d24__ic .fn-icon { width: 20px; height: 20px; }
+.d24__name { font-size: 18px; line-height: 22px; font-weight: 800; color: var(--brass); }
+.d24__line { font: var(--type-body); color: var(--ink-body); margin: 10px 0 14px; }
+.d24__replay { margin-top: var(--space-3); }
+.fn-health { display: flex; gap: var(--space-2); align-items: flex-start; margin-top: var(--space-4); font: var(--type-caption); color: var(--ink-muted); }
+.fn-health .fn-icon { width: 16px; height: 16px; }
+
+/* ----- Take-off ----- */
+.sl-ride { transform-box: fill-box; transform-origin: 50% 100%; }
+.takeoff .sl-ride { animation: fn-takeoff var(--dur-takeoff) var(--ease-takeoff) 1.4s forwards; }
+@keyframes fn-takeoff {
+  20% { transform: translate(0, -6px) rotate(-2deg); }
+  100% { transform: translate(420px, -560px) rotate(-14deg); }
+}
+.takeoff .sl-msg {
+  position: absolute; left: 24px; right: 24px; top: 96px; z-index: 4;
+  text-align: center;
+  animation: fn-fadein var(--dur-fade-in) var(--ease-out) 3.4s both;
+}
+.sl-msg p { font: var(--type-body); color: var(--ink-body); margin-top: var(--space-2); }
+.c-title { font: var(--type-celebration-title); letter-spacing: var(--tracking-tight); margin-top: var(--space-5); }
+.c-title--candle { color: var(--candle); }
+.c-title--brass { color: var(--brass); }
+.bottom-cta { position: absolute; left: max(24px, calc(50% - 236px)); right: max(24px, calc(50% - 236px)); bottom: 24px; z-index: 4; }
+@keyframes fn-fadein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* Skip (tap / Esc) and reduced motion: the end picture (as in the prototype: Santa on the
+   loaded sleigh, message shown). */
+.takeoff.end .sl-ride { animation: none; }
+.takeoff.end .sl-msg { animation: none; opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .ride .ride-glow { animation: none; }
+  .takeoff .sl-ride { animation: none !important; }
+  .takeoff .sl-msg { animation: none !important; opacity: 1; }
+}

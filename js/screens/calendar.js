@@ -1,15 +1,16 @@
 // Calendar: the sleigh in the snow at night (ported from the prototype's renderCalendar,
 // sleighHtml, giftSvg, firSvg, ELF, flakes, finishDay, throwGift, puffAt and the pointer
-// handlers). Day 24's ride (#7) is a separate issue. The ⋯ menu is in menu.js.
+// handlers) and the day-24 ride (rideOpen branch of sleighHtml, bigSanta). The ⋯ menu is in menu.js.
 
 import { LAST_DAY, daysUntilStart, phase } from '../dates.js';
-import { GIFT, MISSED_SCALE, TODAY_POS, flick, sceneLayout, statusLine, throwDuration } from '../scene.js';
+import { GIFT, MISSED_SCALE, TODAY_POS, flick, sceneLayout, snowbank, throwDuration } from '../scene.js';
 import { icon } from '../icons.js';
+import { santaBig, santaSmall } from '../santa.js';
 import { handleMenuAction, menuHtml } from './menu.js';
 
-const reducedMotion = () => Boolean(globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
+export const reducedMotion = () => Boolean(globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
 
-function flakes(n, o) {
+export function flakes(n, o) {
   const r = Math.random;
   let out = '';
   for (let i = 0; i < n; i += 1) {
@@ -73,7 +74,14 @@ const ELF = `<g class="sl-elf" transform="translate(-10 0)" aria-hidden="true"><
     <circle cx="342" cy="404.9" r="6.3" fill="var(--character-skin)"/><circle cx="339.8" cy="404.4" r="1.1" fill="var(--character-ink)"/><circle cx="344.2" cy="404.4" r="1.1" fill="var(--character-ink)"/>
     <path d="M335.7 401.8 Q340 386 351.2 389.1 Q345.1 394.2 348.3 401.8 Z" fill="var(--elf-fir)"/><circle cx="351.7" cy="389.1" r="2" fill="var(--character-bell)"/></g>`;
 
-function sleighSvg(i18n, L, modes, pending) {
+const SLEIGH_BODY = 'M52 362 L262 362 Q300 362 302 322 L302 300 L272 300 L272 324 Q272 338 256 338 L52 338 Z';
+
+/**
+ * The scene. `opts.ride`: day 24 waits (big Santa instead of the elf, sleigh pulses in brass and
+ * is a button). `opts.takeoff`: Santa rides on the sleigh, no elf, no waiting presents.
+ */
+export function sleighSvg(i18n, L, modes, pending, opts = {}) {
+  const { ride = false, takeoff = false } = opts;
   const pile = L.loaded
     .filter((d) => d !== pending?.day)
     .map((d) => giftSvg(i18n, modes, d, ...L.pos[d], 'done')).join('');
@@ -81,19 +89,25 @@ function sleighSvg(i18n, L, modes, pending) {
     const [x, y] = L.pos[d];
     return `<g transform="translate(${x} ${y}) scale(${MISSED_SCALE}) translate(${-x} ${-y})">${giftSvg(i18n, modes, d, x, y, 'missed', i % 2 ? 4 : -4)}</g>`;
   }).join('');
-  if (L.today !== null) ground += giftSvg(i18n, modes, L.today, ...L.pos[L.today], 'today');
-  if (pending) ground += giftSvg(i18n, modes, pending.day, ...pending.from, 'ready') + throwHint(i18n, ...pending.from);
+  if (L.today !== null && !takeoff) ground += giftSvg(i18n, modes, L.today, ...L.pos[L.today], 'today');
+  if (pending && !takeoff) ground += giftSvg(i18n, modes, pending.day, ...pending.from, 'ready') + throwHint(i18n, ...pending.from);
+  const rideAttrs = ride ? ` data-act="ride" role="button" tabindex="0" aria-label="${i18n.t('rideLabel')}"` : '';
+  let front = ELF;
+  if (takeoff) front = '';
+  else if (ride) front = `<g class="ride-santa" data-act="ride">${santaBig(262, 378, 46)}</g>`;
   return `<svg class="sl-svg" viewBox="0 140 360 360" preserveAspectRatio="xMidYMax meet" role="group" aria-label="${i18n.t('tagline')}">
       <path d="M-200 330 Q180 296 560 330 L560 520 L-200 520 Z" fill="var(--track)"/>
       ${FIRS.map(([x, b, h]) => firSvg(x, b, h)).join('')}
-      <g class="sl-ride">
-        <path d="M52 362 L262 362 Q300 362 302 322 L302 300 L272 300 L272 324 Q272 338 256 338 L52 338 Z" fill="var(--santa-red)"/>
+      <g class="sl-ride${ride ? ' ride' : ''}"${rideAttrs}>
+        ${ride ? `<path class="ride-glow" d="${SLEIGH_BODY}" fill="none" stroke="var(--brass)" stroke-width="10" stroke-linejoin="round" opacity=".6"/>` : ''}
+        ${takeoff ? santaSmall(282, 336, 0.62, true) : ''}
+        <path d="${SLEIGH_BODY}" fill="var(--santa-red)"/>
         <path d="M44 384 L272 384 Q310 384 310 358" fill="none" stroke="var(--brass)" stroke-width="5" stroke-linecap="round"/>
         <path d="M84 362 L84 384 M232 362 L232 384" stroke="var(--brass)" stroke-width="4"/>
         <g class="pile">${pile}</g>
       </g>
       <g class="ground">${ground}</g>
-      ${ELF}
+      ${front}
       <g class="puff"></g>
     </svg>`;
 }
@@ -225,37 +239,54 @@ export function renderCalendar(root, view, app) {
   const modes = storage.modes;
   const pending = app.pending ?? null;
   const L = sceneLayout(now, progress);
-  const status = statusLine(now, progress, pending?.day ?? null);
+  const bank = snowbank(now, progress, pending?.day ?? null);
+  const statusText = i18n.t(bank.status.key, bank.status.params);
+  let bankHtml = `<div class="fn-snowbank">
+        <p class="fn-snowbank__tagline">${i18n.t('tagline')}</p>
+        <p class="fn-snowbank__status">${statusText}</p>
+      </div>`;
+  if (bank.kind === 'ride') {
+    bankHtml = `<div class="fn-snowbank fn-snowbank--ride">
+        <p class="fn-snowbank__tagline">${statusText}</p>
+        <button class="fn-btn fn-btn--day24" data-act="ride">${i18n.t('rideHint')}</button>
+      </div>`;
+  } else if (bank.kind === 'after24') {
+    bankHtml = `<div class="fn-snowbank">
+        <p class="fn-snowbank__tagline">${statusText}</p>
+        <p class="fn-snowbank__status">${i18n.t('repeatHint')}</p>
+      </div>`;
+  }
 
   root.innerHTML = `
     <div class="fn-scene cal">
       <div class="snowlayer" aria-hidden="true">${reducedMotion() ? '' : flakes(26, { min: 2, range: 3, op: 0.2, opRange: 0.3, dur: 7, durRange: 7 })}</div>
-      ${sleighSvg(i18n, L, modes, pending)}
+      ${sleighSvg(i18n, L, modes, pending, { ride: bank.kind === 'ride' })}
       ${phase(now) === 'pre' ? countdown(i18n, now) : ''}
       ${storage.available ? '' : `<div class="storage-note">${icon('info')}<span>${i18n.t('storageNote')}</span></div>`}
       <button class="fn-menu-btn" data-act="menu" aria-label="${i18n.t('menu')}" aria-haspopup="dialog"
         aria-expanded="${Boolean(view.menu)}"${view.menu ? ' aria-controls="menu"' : ''}>${icon('ellipsis')}</button>
       ${menuHtml(view, i18n, now)}
-      <div class="fn-snowbank">
-        <p class="fn-snowbank__tagline">${i18n.t('tagline')}</p>
-        <p class="fn-snowbank__status">${i18n.t(status.key, status.params)}</p>
-      </div>
+      ${bankHtml}
     </div>`;
 
   const open = (el) => app.go({ name: 'mode', day: Number(el.dataset.day) });
+  const ride = () => app.go({ name: 'day24' });
   root.onclick = (e) => {
     const el = e.target.closest('[data-act]');
     if (!el || handleMenuAction(el, view, app)) return;
     if (el.dataset.act === 'open') open(el);
+    if (el.dataset.act === 'ride') ride();
   };
   escape = view.menu ? () => app.go({ name: 'calendar', focus: '.fn-menu-btn' }) : null;
   root.onkeydown = (e) => {
     if (e.key !== 'Enter' && e.key !== ' ') return;
     const ready = e.target.closest?.('.gift-ready');
-    const el = ready || e.target.closest?.('[data-act="open"]');
+    // Native buttons handle Enter/Space themselves; only the SVG buttons need this.
+    const el = ready || e.target.closest?.('g[data-act="open"], g[data-act="ride"]');
     if (!el) return;
     e.preventDefault();
     if (ready) throwGift(root, app, ready, 0, 0, 0.3);
+    else if (el.dataset.act === 'ride') ride();
     else open(el);
   };
   bindThrow(root, app);

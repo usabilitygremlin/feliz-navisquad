@@ -85,3 +85,22 @@ export function statusLine(now, progress, pending = null) {
   }
   return { key: 'statusOpen', params: { day: today, count: done.length } };
 }
+
+/** Day 24 waits as the ride (Santa in front of the sleigh) on 24 Dec and, if missed, afterwards. */
+export function rideOpen(now, progress) {
+  const s = winState(LAST_DAY, now, progress);
+  return s === 'today' || s === 'missed';
+}
+
+/**
+ * What the snow bank shows:
+ * - 'ride'   : day 24 waits; line 1 is the status ("Santa is here"), plus the "Tap to ride" button, no tagline
+ * - 'after24': day 24 is done; line 1 is the status (Merry Christmas…), line 2 invites to repeat any workout
+ * - 'normal' : tagline, then the status
+ */
+export function snowbank(now, progress, pending = null) {
+  const status = statusLine(now, progress, pending);
+  if (rideOpen(now, progress)) return { kind: 'ride', status };
+  if (progress.done.includes(LAST_DAY)) return { kind: 'after24', status };
+  return { kind: 'normal', status };
+}
