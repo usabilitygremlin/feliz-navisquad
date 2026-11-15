@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { slotPos, missedPos, sceneLayout, statusLine, SLOTS, TODAY_POS } from '../js/scene.js';
+import { slotPos, missedPos, sceneLayout, statusLine, flick, throwDuration, SLOTS, TODAY_POS } from '../js/scene.js';
 
 const at = (month, day, h = 12) => new Date(2026, month - 1, day, h, 0);
 const progress = (done = []) => ({ done });
@@ -69,4 +69,22 @@ test('status line covers every prototype variant', () => {
   assert.deepEqual(s(at(12, 24), [1, 24]), { key: 'status24Done', params: {} });
   assert.deepEqual(s(at(12, 27), [1, 2]), { key: 'status24Open', params: {} });
   assert.deepEqual(s(at(12, 27), [1, 2, 24]), { key: 'statusAfter', params: { count: 2 } });
+});
+
+test('throwing never fails: a tap or any upward flick throws, only small/downward drags snap back', () => {
+  assert.deepEqual(flick({ moved: false, dy: 0, vy: 0 }), { throw: true, power: 0.3 });
+  assert.equal(flick({ moved: true, dy: -31, vy: 0 }).throw, true); // dragged up far enough
+  assert.equal(flick({ moved: true, dy: -5, vy: -0.4 }).throw, true); // short but fast flick
+  assert.equal(flick({ moved: true, dy: -20, vy: -0.1 }).throw, false); // small slow nudge
+  assert.equal(flick({ moved: true, dy: 16, vy: 0.5 }).throw, false); // downward
+  assert.equal(flick({ moved: true, dy: -400, vy: -5 }).power, 1); // capped
+  assert.equal(flick({ moved: true, dy: -60, vy: -0.1 }).power, 0.5);
+});
+
+test('flight takes 0.9–1.2 s, stronger flicks fly longer', () => {
+  assert.equal(throwDuration(0), 900);
+  assert.equal(throwDuration(0.3), 990);
+  assert.equal(throwDuration(1), 1200);
+  assert.equal(throwDuration(7), 1200);
+  assert.equal(throwDuration(-1), 900);
 });

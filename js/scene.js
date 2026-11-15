@@ -49,6 +49,22 @@ export function sceneLayout(now, progress) {
 }
 
 /**
+ * What a drag on the ready present does (prototype's endDrag). `dy` is in scene units
+ * (negative = up), `vy` in scene units per ms. It can't fail: a tap throws, any upward
+ * flick throws; only a small or downward drag snaps back.
+ */
+export function flick({ moved, dy, vy }) {
+  if (!moved) return { throw: true, power: 0.3 };
+  if (dy < -30 || vy < -0.35) return { throw: true, power: Math.min(1, Math.max(-vy, -dy / 120)) };
+  return { throw: false, power: 0 };
+}
+
+/** Flight time in ms: 0.9 s for a gentle throw up to 1.2 s for a strong one. */
+export function throwDuration(power) {
+  return 900 + 300 * Math.min(1, Math.max(0, power));
+}
+
+/**
  * Line 2 on the snow bank as { key, params } for i18n.
  * `pending` is the day whose present waits to be thrown (done moment), if any.
  */
