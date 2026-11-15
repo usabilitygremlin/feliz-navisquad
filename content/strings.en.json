@@ -24,6 +24,7 @@
   },
   "day": "Day {day}",
   "opensOn": "Opens on {date}",
+  "shelfDate": "{day}.12.",
   "menu": "Menu",
   "close": "Close",
   "language": "Language",

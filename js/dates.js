@@ -73,3 +73,10 @@ export function devDateOverride({ hostname, search }) {
 export function currentDate(location = globalThis.location, clock = () => new Date()) {
   return (location && devDateOverride(location)) || clock();
 }
+
+/** Days still locked at `now` ("Still in the workshop"), in order. Empty from 24 Dec on. */
+export function lockedDays(now) {
+  const out = [];
+  for (let d = 1; d <= LAST_DAY; d += 1) if (now < openDate(d)) out.push(d);
+  return out;
+}
