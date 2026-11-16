@@ -1,5 +1,5 @@
 {
-  "tagline": "Hilf den Elfen, den Schlitten zu beladen",
+  "tagline": "Trainiere mit den Elfen und stelle Geschenke her.",
   "swipeHint": "Nach oben wischen",
   "rideHint": "Tippen zum Losfahren",
   "status24Open": "Es wird Zeit die Geschenke zu verteilen!",
@@ -7,7 +7,7 @@
   "statusReady": "Geschenk {day} ist bereit · wirf es auf den Schlitten",
   "readyLabel": "Geschenk {day}, bereit. Nach oben wischen, tippen oder Enter drücken, um es auf den Schlitten zu werfen",
   "workshop": "Noch in der Werkstatt",
-  "workshopEmpty": "Die Werkstatt ist leer. Alle Geschenke sind draußen.",
+  "workshopEmpty": "Die Werkstatt ist leer. Alle Geschenke sind auf dem Schlitten.",
   "statusPre": "Startet am 1. Dezember · dann wartet das erste Geschenk",
   "preTitle": "Psst! Die Elfen schlafen noch. Komm am 1. Dezember wieder.",
   "preCountTomorrow": "Die Werkstatt öffnet morgen",
@@ -19,7 +19,7 @@
   "repeatHint": "Lust auf noch eine Runde? Du kannst jedes Workout jederzeit wiederholen.",
   "state": {
     "locked": "noch in der Werkstatt",
-    "missed": "liegt im Schnee, noch nicht auf dem Schitten",
+    "missed": "liegt in der Werkstatt: hole das Workout nach",
     "today": "heute, wartet",
     "done": "auf dem Schlitten"
   },
@@ -31,7 +31,7 @@
   "language": "Sprache",
   "about": "Worum geht’s?",
   "health": "Gesundheitshinweis",
-  "aboutText": "Trainiere mit den Elfen während sie die Geschenke herstellen und belade den Schlitten vom Weihnachtsmann. Jeden Tag wartet ein Workout in der Werkstatt: 10 Minuten mit dem eigenen Körpergewicht trainieren (Moderat oder Recovery), und das fertige Geschenk kommt auf den Schlitten. Am 24. kommt der Weihnachtsmann selbst zu seinem jährlichen Workout. Dein Fortschritt bleibt auf diesem Gerät.",
+  "aboutText": "Trainiere mit den Elfen während sie die Geschenke herstellen und belade so den Schlitten des Weihnachtsmanns. Jeden Tag wartet ein Workout in der Werkstatt: 10 Minuten mit dem eigenen Körpergewicht trainieren und das fertige Geschenk kommt auf den Schlitten. Am 24. kommt der Weihnachtsmann selbst zu seinem jährlichen Workout. Dein Fortschritt bleibt auf diesem Gerät.",
   "healthText": "Die Übungen sind allgemeine Vorschläge, keine medizinische Beratung. Hör auf, wenn etwas weh tut.",
   "storageNote": "Dein Fortschritt kann in diesem Browser nicht gespeichert werden.",
   "calendar": "Kalender",
@@ -55,9 +55,9 @@
     "recovery": "Recovery-Elf, meditiert"
   },
   "modeMeta": "{mode} · {count} Übungen · 10 Min.",
-  "d24Title": "Die große Geschenke-Tour",
-  "d24Badge": "Weihnachtsabend",
-  "d24Line": "Santas große Nacht in 5 Stationen. Jede Station hat eine leichtere und eine schwerere Variante, damit alle mitmachen können.",
+  "d24Title": "Das Weihnachts-Workout",
+  "d24Badge": "Weihnachts-Workout",
+  "d24Line": "Bereit für das große Finale? 5 Stationen, jede hat eine leichtere und eine schwerere Variante.",
   "d24Meta": "5 Stationen · 12–15 Min.",
   "replay": "Feier nochmal ansehen",
   "next": "Weiter",
@@ -70,12 +70,12 @@
   "momentTitle": "Tag {day} geschafft",
   "momentMeta": "{count} von 24 · guter Rhythmus",
   "backToCal": "Zurück zum Kalender",
-  "sleighTitle": "Schlittenfahrt geschafft",
-  "sleighMsg": "Schön, dass du heute dabei warst. Frohe Weihnachten!",
+  "sleighTitle": "Alle Geschenke verteilt",
+  "sleighMsg": "Gut gemacht! Frohe Weihnachten!",
   "finaleTitle": "24 von 24",
-  "finaleMsg": "Du warst jeden einzelnen Tag dabei. Das ist schon der ganze Trick.",
+  "finaleMsg": "Mega! Du warst jeden einzelnen Tag dabei.",
   "tapSkip": "Tippen zum Überspringen",
   "errTitle": "Das Workout konnte nicht geladen werden",
-  "errBody": "Mit den Inhalten stimmt etwas nicht. Versuch es nochmal – wenn es wieder passiert, schau etwas später vorbei.",
+  "errBody": "Mit den Inhalten stimmt etwas nicht. Versuch es nochmal. Wenn es wieder passiert, schau etwas später vorbei.",
   "retry": "Nochmal versuchen"
 }
